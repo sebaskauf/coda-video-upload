@@ -9,7 +9,7 @@ function App() {
   const [isUploading, setIsUploading] = useState(false)
 
   // n8n Webhook URL - Replace this with your actual n8n webhook URL
-  const N8N_WEBHOOK_URL = 'https://n8n-self-host-n8n.qpo7vu.easypanel.host/webhook/video-upload'
+  const N8N_WEBHOOK_URL = 'https://n8n-self-host-n8n.qpo7vu.easypanel.host/webhook-test/video-upload'
 
   // Erlaubte Video-Formate (MP4 bevorzugt!)
   const ALLOWED_VIDEO_TYPES = [
