@@ -1,0 +1,45 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  /* Orange/Black Theme */
+  --color-primary: #FF6B00;
+  --color-primary-hover: #FF8533;
+  --color-primary-light: rgba(255, 107, 0, 0.1);
+  --color-background: #000000;
+  --color-surface: #0a0a0a;
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #999999;
+  --color-border: #222222;
+  --color-error: #ff4444;
+  --color-error-light: rgba(255, 68, 68, 0.1);
+  --color-success: #00ff88;
+  --color-success-light: rgba(0, 255, 136, 0.1);
+
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  line-height: 1.6;
+  font-weight: 400;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  overflow-x: hidden;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+  position: relative;
+}
