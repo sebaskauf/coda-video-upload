@@ -19,6 +19,21 @@ function App() {
     'video/mpeg'
   ]
 
+  // Erlaubte Bild-Formate für Thumbnails
+  const ALLOWED_IMAGE_TYPES = [
+    'image/jpeg',
+    'image/jpg',
+    'image/png',
+    'image/webp'
+  ]
+
+  // Helper function to check if file is image or video
+  const getFileType = (file) => {
+    if (ALLOWED_VIDEO_TYPES.includes(file.type)) return 'video'
+    if (ALLOWED_IMAGE_TYPES.includes(file.type)) return 'image'
+    return 'unknown'
+  }
+
   const handleDragOver = (e) => {
     e.preventDefault()
     setIsDragging(true)
@@ -34,34 +49,38 @@ function App() {
     setIsDragging(false)
 
     const droppedFiles = Array.from(e.dataTransfer.files)
-    const videoFiles = droppedFiles.filter(file => ALLOWED_VIDEO_TYPES.includes(file.type))
+    const validFiles = droppedFiles.filter(file => getFileType(file) !== 'unknown')
+    const videoFiles = validFiles.filter(file => getFileType(file) === 'video')
+    const imageFiles = validFiles.filter(file => getFileType(file) === 'image')
     const mp4Files = videoFiles.filter(file => file.type === 'video/mp4')
 
-    if (videoFiles.length < droppedFiles.length) {
-      setUploadStatus('Nur Video-Dateien bitte! Am besten MP4 😊')
+    if (validFiles.length < droppedFiles.length) {
+      setUploadStatus('Nur Videos & Thumbnails bitte! 😊')
       setTimeout(() => setUploadStatus(''), 3000)
-    } else if (mp4Files.length < videoFiles.length) {
+    } else if (videoFiles.length > 0 && mp4Files.length < videoFiles.length) {
       setUploadStatus('Tipp: MP4 funktioniert am besten!')
       setTimeout(() => setUploadStatus(''), 4000)
     }
 
-    setFiles(prev => [...prev, ...videoFiles])
+    setFiles(prev => [...prev, ...validFiles])
   }
 
   const handleFileSelect = (e) => {
     const selectedFiles = Array.from(e.target.files)
-    const videoFiles = selectedFiles.filter(file => ALLOWED_VIDEO_TYPES.includes(file.type))
+    const validFiles = selectedFiles.filter(file => getFileType(file) !== 'unknown')
+    const videoFiles = validFiles.filter(file => getFileType(file) === 'video')
+    const imageFiles = validFiles.filter(file => getFileType(file) === 'image')
     const mp4Files = videoFiles.filter(file => file.type === 'video/mp4')
 
-    if (videoFiles.length < selectedFiles.length) {
-      setUploadStatus('Nur Video-Dateien bitte! Am besten MP4 😊')
+    if (validFiles.length < selectedFiles.length) {
+      setUploadStatus('Nur Videos & Thumbnails bitte! 😊')
       setTimeout(() => setUploadStatus(''), 3000)
-    } else if (mp4Files.length < videoFiles.length) {
+    } else if (videoFiles.length > 0 && mp4Files.length < videoFiles.length) {
       setUploadStatus('Tipp: MP4 funktioniert am besten!')
       setTimeout(() => setUploadStatus(''), 4000)
     }
 
-    setFiles(prev => [...prev, ...videoFiles])
+    setFiles(prev => [...prev, ...validFiles])
   }
 
   const formatFileSize = (bytes) => {
@@ -78,7 +97,7 @@ function App() {
 
   const uploadFiles = async () => {
     if (files.length === 0) {
-      setUploadStatus('Bitte wähle zuerst Videos aus')
+      setUploadStatus('Bitte wähle zuerst Dateien aus')
       return
     }
 
@@ -97,6 +116,7 @@ function App() {
       formData.append('fileName', file.name)
       formData.append('fileSize', file.size)
       formData.append('mimeType', file.type)
+      formData.append('fileType', getFileType(file)) // 'video' or 'image'
 
       try {
         // Upload to n8n webhook
@@ -142,9 +162,9 @@ function App() {
           <div className="logo">
             <span className="logo-accent">CODA</span> Marketing Video Upload
           </div>
-          <h1>Corn. Lade hier einfach die Videos hoch</h1>
+          <h1>Corn. Lade hier einfach die Videos & Thumbnails hoch</h1>
           <p className="subtitle">
-            Am besten als <strong>MP4</strong> - dann klappt's am sichersten! 🎬
+            Videos am besten als <strong>MP4</strong> - Thumbnails als <strong>JPG/PNG</strong>! 🎬🖼️
           </p>
         </div>
 
@@ -159,7 +179,7 @@ function App() {
             id="fileInput"
             type="file"
             multiple
-            accept="video/*"
+            accept="video/*,image/*"
             onChange={handleFileSelect}
             style={{ display: 'none' }}
           />
@@ -168,10 +188,10 @@ function App() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
             </svg>
             <p className="dropzone-text">
-              Video hier reinziehen oder klicken
+              Videos & Thumbnails hier reinziehen oder klicken
             </p>
             <p className="dropzone-hint">
-              Bitte <strong>MP4</strong> verwenden! (MOV & Co. machen manchmal Probleme 😅)
+              Videos: <strong>MP4</strong> bevorzugt! | Thumbnails: <strong>JPG/PNG</strong> 😊
             </p>
           </div>
         </div>
@@ -179,7 +199,7 @@ function App() {
         {files.length > 0 && (
           <div className="files-list">
             <div className="files-header">
-              <h3>Ausgewählte Videos ({files.length})</h3>
+              <h3>Ausgewählte Dateien ({files.length})</h3>
               <button className="clear-btn" onClick={clearAll} disabled={isUploading}>
                 Alle entfernen
               </button>
@@ -187,7 +207,10 @@ function App() {
             {files.map((file, index) => (
               <div key={index} className="file-item">
                 <div className="file-info">
-                  <span className="file-name">{file.name}</span>
+                  <span className="file-name">
+                    {getFileType(file) === 'image' ? '🖼️ ' : '🎬 '}
+                    {file.name}
+                  </span>
                   <span className="file-size">{formatFileSize(file.size)}</span>
                 </div>
                 <div className="file-actions">
@@ -211,7 +234,7 @@ function App() {
 
         {files.length > 0 && (
           <button className="upload-btn" onClick={uploadFiles} disabled={isUploading}>
-            {isUploading ? 'Upload läuft...' : `${files.length} ${files.length === 1 ? 'Video' : 'Videos'} hochladen`}
+            {isUploading ? 'Upload läuft...' : `${files.length} ${files.length === 1 ? 'Datei' : 'Dateien'} hochladen`}
           </button>
         )}
 
