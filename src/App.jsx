@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import './App.css'
+import ChatWindow from './components/ChatWindow'
 
 function App() {
   const [isDragging, setIsDragging] = useState(false)
@@ -7,7 +8,9 @@ function App() {
   const [uploadProgress, setUploadProgress] = useState({})
   const [uploadStatus, setUploadStatus] = useState('')
   const [isUploading, setIsUploading] = useState(false)
-  const [currentView, setCurrentView] = useState('upload') // 'upload', 'loading', 'success'
+  const [currentView, setCurrentView] = useState('upload') // 'upload', 'loading', 'success', 'chat'
+  const [videoId, setVideoId] = useState(null)
+  const [notionPageId, setNotionPageId] = useState(null)
 
   // n8n Webhook URL - Replace this with your actual n8n webhook URL
   const N8N_WEBHOOK_URL = 'https://n8n-self-host-n8n.qpo7vu.easypanel.host/webhook-test/video-upload'
@@ -112,6 +115,9 @@ function App() {
     setIsUploading(true)
     setUploadStatus('Upload läuft...')
 
+    let lastVideoId = null
+    let lastNotionPageId = null
+
     for (let i = 0; i < files.length; i++) {
       const file = files[i]
       const formData = new FormData()
@@ -129,6 +135,16 @@ function App() {
         })
 
         if (response.ok) {
+          const data = await response.json()
+
+          // Store video_id and notion_page_id from response
+          if (data.video_id) {
+            lastVideoId = data.video_id
+          }
+          if (data.notion_page_id) {
+            lastNotionPageId = data.notion_page_id
+          }
+
           setUploadProgress(prev => ({
             ...prev,
             [file.name]: 'Erfolgreich'
@@ -151,8 +167,16 @@ function App() {
     setIsUploading(false)
     setUploadStatus('Upload abgeschlossen!')
 
-    // Switch to success view after upload completes
-    setCurrentView('success')
+    // Store the IDs for chat
+    if (lastVideoId) {
+      setVideoId(lastVideoId)
+    }
+    if (lastNotionPageId) {
+      setNotionPageId(lastNotionPageId)
+    }
+
+    // Switch to chat view after upload completes (instead of success)
+    setCurrentView('chat')
   }
 
   const clearAll = () => {
@@ -167,6 +191,13 @@ function App() {
     setUploadProgress({})
     setUploadStatus('')
     setIsUploading(false)
+    setVideoId(null)
+    setNotionPageId(null)
+  }
+
+  const handleCloseChat = () => {
+    // When closing chat, show success view
+    setCurrentView('success')
   }
 
   // Loading View Component
@@ -226,6 +257,13 @@ function App() {
 
   return (
     <div className="app">
+      {currentView === 'chat' && videoId && (
+        <ChatWindow
+          videoId={videoId}
+          notionPageId={notionPageId}
+          onClose={handleCloseChat}
+        />
+      )}
       <div className="container">{currentView === 'loading' && <LoadingView />}
         {currentView === 'success' && <SuccessView />}
         {currentView === 'upload' && (
