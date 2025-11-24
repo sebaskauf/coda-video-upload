@@ -7,6 +7,7 @@ function App() {
   const [uploadProgress, setUploadProgress] = useState({})
   const [uploadStatus, setUploadStatus] = useState('')
   const [isUploading, setIsUploading] = useState(false)
+  const [currentView, setCurrentView] = useState('upload') // 'upload', 'loading', 'success'
 
   // n8n Webhook URL - Replace this with your actual n8n webhook URL
   const N8N_WEBHOOK_URL = 'https://n8n-self-host-n8n.qpo7vu.easypanel.host/webhook-test/video-upload'
@@ -106,6 +107,8 @@ function App() {
       return
     }
 
+    // Switch to loading view
+    setCurrentView('loading')
     setIsUploading(true)
     setUploadStatus('Upload läuft...')
 
@@ -147,6 +150,9 @@ function App() {
 
     setIsUploading(false)
     setUploadStatus('Upload abgeschlossen!')
+
+    // Switch to success view after upload completes
+    setCurrentView('success')
   }
 
   const clearAll = () => {
@@ -155,9 +161,75 @@ function App() {
     setUploadStatus('')
   }
 
+  const resetUpload = () => {
+    setCurrentView('upload')
+    setFiles([])
+    setUploadProgress({})
+    setUploadStatus('')
+    setIsUploading(false)
+  }
+
+  // Loading View Component
+  const LoadingView = () => (
+    <div className="loading-view">
+      <div className="loading-animation">
+        <div className="spinner-ring"></div>
+        <div className="spinner-ring"></div>
+        <div className="spinner-ring"></div>
+      </div>
+      <h2 className="loading-title">Upload läuft...</h2>
+      <p className="loading-text">Deine Videos werden gerade hochgeladen</p>
+      <div className="loading-progress">
+        {files.map((file, index) => (
+          <div key={index} className="loading-file">
+            <span className="loading-file-icon">
+              {getFileType(file) === 'image' ? '🖼️' : '🎬'}
+            </span>
+            <span className="loading-file-name">{file.name}</span>
+            <span className={`loading-file-status ${uploadProgress[file.name]?.toLowerCase() || 'pending'}`}>
+              {uploadProgress[file.name] || 'Warten...'}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+
+  // Success View Component
+  const SuccessView = () => (
+    <div className="success-view">
+      <div className="success-animation">
+        <div className="success-checkmark">
+          <svg viewBox="0 0 52 52">
+            <circle className="success-checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+            <path className="success-checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+          </svg>
+        </div>
+      </div>
+      <h2 className="success-title">Hey Kornelios, Upload erfolgreich!</h2>
+      <p className="success-text">Perfekt! Deine Videos werden jetzt verarbeitet.</p>
+      <div className="success-telegram">
+        <div className="telegram-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
+          </svg>
+        </div>
+        <p className="telegram-text">
+          Schau auf <strong>Telegram</strong> - wir haben dir eine Nachricht geschickt!
+        </p>
+      </div>
+      <button className="success-btn" onClick={resetUpload}>
+        Weitere Videos hochladen
+      </button>
+    </div>
+  )
+
   return (
     <div className="app">
-      <div className="container">
+      <div className="container">{currentView === 'loading' && <LoadingView />}
+        {currentView === 'success' && <SuccessView />}
+        {currentView === 'upload' && (
+        <>
         <div className="header">
           <div className="logo">
             <span className="logo-accent">CODA</span> Marketing Video Upload
@@ -242,6 +314,8 @@ function App() {
           <div className={`status-message ${uploadStatus.includes('Fehler') || uploadStatus.includes('konfiguriere') ? 'error' : 'success'}`}>
             {uploadStatus}
           </div>
+        )}
+        </>
         )}
       </div>
     </div>
