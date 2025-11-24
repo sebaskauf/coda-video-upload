@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
 import ChatWindow from './components/ChatWindow'
 
@@ -11,6 +11,7 @@ function App() {
   const [currentView, setCurrentView] = useState('upload') // 'upload', 'loading', 'success', 'chat'
   const [videoId, setVideoId] = useState(null)
   const [notionPageId, setNotionPageId] = useState(null)
+  const [currentStep, setCurrentStep] = useState(0) // 0: upload, 1: AI, 2: database
 
   // n8n Webhook URL - Production
   const N8N_WEBHOOK_URL = 'https://n8n-self-host-n8n.qpo7vu.easypanel.host/webhook/video-upload'
@@ -113,6 +114,7 @@ function App() {
     // Switch to loading view
     setCurrentView('loading')
     setIsUploading(true)
+    setCurrentStep(0)
     setUploadStatus('Upload läuft...')
 
     let lastVideoId = null
@@ -128,6 +130,9 @@ function App() {
       formData.append('fileType', getFileType(file)) // 'video' or 'image'
 
       try {
+        // Step 0: Upload started
+        setCurrentStep(0)
+
         // Upload to n8n webhook
         const response = await fetch(N8N_WEBHOOK_URL, {
           method: 'POST',
@@ -135,7 +140,13 @@ function App() {
         })
 
         if (response.ok) {
+          // Step 1: AI processing (simulate delay for AI description)
+          setCurrentStep(1)
+
           const data = await response.json()
+
+          // Step 2: Database entry
+          setCurrentStep(2)
 
           // Store video_id and notion_page_id from response
           if (data.video_id) {
@@ -164,6 +175,9 @@ function App() {
       }
     }
 
+    // Step 3: Complete
+    setCurrentStep(3)
+
     setIsUploading(false)
     setUploadStatus('Upload abgeschlossen!')
 
@@ -174,6 +188,9 @@ function App() {
     if (lastNotionPageId) {
       setNotionPageId(lastNotionPageId)
     }
+
+    // Small delay before switching to chat
+    await new Promise(resolve => setTimeout(resolve, 800))
 
     // Switch to chat view after upload completes (instead of success)
     setCurrentView('chat')
@@ -200,31 +217,48 @@ function App() {
     setCurrentView('success')
   }
 
-  // Loading View Component
-  const LoadingView = () => (
-    <div className="loading-view">
-      <div className="loading-animation">
-        <div className="spinner-ring"></div>
-        <div className="spinner-ring"></div>
-        <div className="spinner-ring"></div>
+  // Loading View Component with Steps
+  const LoadingView = () => {
+    const steps = [
+      { id: 0, label: 'Video wird hochgeladen', icon: '📤' },
+      { id: 1, label: 'Video wird durch KI beschrieben', icon: '🤖' },
+      { id: 2, label: 'Video wird in die Datenbank eingetragen', icon: '💾' },
+      { id: 3, label: 'Fertig!', icon: '✅' }
+    ]
+
+    return (
+      <div className="loading-view">
+        <div className="loading-steps-container">
+          {steps.map((step) => (
+            <div
+              key={step.id}
+              className={`loading-step ${currentStep === step.id ? 'active' : ''} ${currentStep > step.id ? 'completed' : ''}`}
+            >
+              <div className="loading-step-icon">
+                {currentStep === step.id ? (
+                  <div className="spinner-circle"></div>
+                ) : currentStep > step.id ? (
+                  <div className="checkmark">✓</div>
+                ) : (
+                  <div className="step-number">{step.id + 1}</div>
+                )}
+              </div>
+              <div className="loading-step-content">
+                <div className="loading-step-emoji">{step.icon}</div>
+                <p className="loading-step-label">{step.label}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="loading-files-info">
+          <p className="loading-files-count">
+            {files.length} {files.length === 1 ? 'Datei' : 'Dateien'} werden verarbeitet
+          </p>
+        </div>
       </div>
-      <h2 className="loading-title">Upload läuft...</h2>
-      <p className="loading-text">Deine Videos werden gerade hochgeladen</p>
-      <div className="loading-progress">
-        {files.map((file, index) => (
-          <div key={index} className="loading-file">
-            <span className="loading-file-icon">
-              {getFileType(file) === 'image' ? '🖼️' : '🎬'}
-            </span>
-            <span className="loading-file-name">{file.name}</span>
-            <span className={`loading-file-status ${uploadProgress[file.name]?.toLowerCase() || 'pending'}`}>
-              {uploadProgress[file.name] || 'Warten...'}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
+    )
+  }
 
   // Success View Component
   const SuccessView = () => (
