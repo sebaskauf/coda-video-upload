@@ -15,7 +15,7 @@ function ChatWindow({ videoId, notionPageId, onClose }) {
   const messagesEndRef = useRef(null)
   const textareaRef = useRef(null)
 
-  const CHAT_WEBHOOK_URL = 'https://n8n-self-host-n8n.qpo7vu.easypanel.host/webhook-test/chat'
+  const CHAT_WEBHOOK_URL = 'https://n8n-self-host-n8n.qpo7vu.easypanel.host/webhook/chat'
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
