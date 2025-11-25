@@ -47,10 +47,27 @@ function ChatWindow({ videoId, notionPageId, onClose }) {
   // Streaming text effect - simulate typing character by character
   const streamText = (text) => {
     setIsStreaming(true)
-    setStreamingText('')
 
-    let index = 0
+    // Set the first character immediately
+    setStreamingText(text[0] || '')
+
+    let index = 1 // Start from second character
     const speed = 20 // milliseconds per character (faster = lower number)
+
+    if (text.length <= 1) {
+      // If text is only 1 character or empty, finish immediately
+      setTimeout(() => {
+        setIsStreaming(false)
+        const assistantMessage = {
+          role: 'assistant',
+          content: text,
+          timestamp: new Date()
+        }
+        setMessages(prev => [...prev, assistantMessage])
+        setStreamingText('')
+      }, speed)
+      return
+    }
 
     streamingIntervalRef.current = setInterval(() => {
       if (index < text.length) {
