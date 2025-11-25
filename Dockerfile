@@ -18,14 +18,17 @@ RUN npm run build
 # Production stage
 FROM nginx:alpine
 
+# Copy built app first
+COPY --from=build /build/dist /usr/share/nginx/html
+
 # Copy nginx config with MIME types fix
 COPY --from=build /build/nginx.conf /etc/nginx/conf.d/default.conf
 
-# Copy built app
-COPY --from=build /build/dist /usr/share/nginx/html
+# Test nginx config
+RUN nginx -t
 
 # Expose port
 EXPOSE 80
 
-# Start nginx
+# Start nginx in foreground
 CMD ["nginx", "-g", "daemon off;"]

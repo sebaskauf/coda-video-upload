@@ -1,0 +1,243 @@
+{
+  "name": "Video Upload Webhook Handler",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "video-upload",
+        "responseMode": "responseNode",
+        "options": {
+          "binaryData": true
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [240, 300],
+      "id": "webhook-receive",
+      "name": "Webhook - Receive Video",
+      "webhookId": "video-upload-frontend"
+    },
+    {
+      "parameters": {
+        "operation": "upload",
+        "folderId": {
+          "__rl": true,
+          "value": "1Qb6A3L4YF1qpLL4X1K-K5h3UGQYCiiGb",
+          "mode": "list",
+          "cachedResultName": "Telephonate Upload"
+        },
+        "binaryPropertyName": "file",
+        "options": {
+          "fileName": "={{ $json.fileName }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [460, 300],
+      "id": "upload-to-drive",
+      "name": "Upload to Google Drive",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "0pc0g9yEQ0WW0TyA",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "user-name",
+              "name": "user_name",
+              "value": "Cornelius",
+              "type": "string"
+            },
+            {
+              "id": "chat-id",
+              "name": "telegram_chat_id",
+              "value": "8455857646",
+              "type": "string"
+            },
+            {
+              "id": "file-name",
+              "name": "file_name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "file-id",
+              "name": "file_id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "file-url",
+              "name": "file_url",
+              "value": "={{ $json.webViewLink }}",
+              "type": "string"
+            },
+            {
+              "id": "file-size",
+              "name": "file_size_mb",
+              "value": "={{ Math.round($json.size / 1000000) }}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [680, 300],
+      "id": "set-user-info",
+      "name": "Set User Info"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "2b2885ad-4362-80d6-a47d-cf674e555709",
+          "mode": "list",
+          "cachedResultName": "Video Upload Queue"
+        },
+        "title": "={{ \"Upload \" + $now.format('DD.MM.YYYY HH:mm') }}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "User ID|rich_text",
+              "textContent": "={{ $json.telegram_chat_id }}"
+            },
+            {
+              "key": "Name|title",
+              "title": "={{ $json.user_name }}"
+            },
+            {
+              "key": "File ID|rich_text",
+              "textContent": "={{ $json.file_id }}"
+            },
+            {
+              "key": "File URL|url",
+              "urlValue": "={{ $json.file_url }}"
+            },
+            {
+              "key": "Timestamp|date",
+              "date": "={{ $now }}",
+              "timezone": "Europe/Berlin"
+            },
+            {
+              "key": "Status|select",
+              "selectValue": "⏱️ Waiting Instructions"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [900, 300],
+      "id": "save-to-notion",
+      "name": "Save to Upload Queue",
+      "credentials": {
+        "notionApi": {
+          "id": "QU9GWfUUQ0xFdkkx",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "8455857646",
+        "text": "=✅ Sehr geil Quandale Video wurde empfangen!\n\n📁 Datei: {{ $('Set User Info').item.json.file_name }}\n📊 Größe: {{ $('Set User Info').item.json.file_size_mb }} MB\n\nWas soll ich jetzt machen?\n\nBeispiel:\n\"Upload für Weber auf Instagram und TikTok, motivierende Caption mit Hashtags\"\n\nVerfügbare Plattformen:\n📱 Instagram\n🎵 TikTok\n📘 Facebook\n📺 YouTube\n💼 LinkedIn"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1120, 300],
+      "id": "notify-telegram",
+      "name": "Notify User via Telegram",
+      "webhookId": "telegram-notify",
+      "credentials": {
+        "telegramApi": {
+          "id": "N3Bf6QDCOvcuHUqm",
+          "name": "Telegram Error Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": true, \"message\": \"Video erfolgreich hochgeladen!\", \"file_id\": $('Upload to Google Drive').item.json.id } }}"
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1340, 300],
+      "id": "respond-success",
+      "name": "Respond to Frontend"
+    }
+  ],
+  "connections": {
+    "Webhook - Receive Video": {
+      "main": [
+        [
+          {
+            "node": "Upload to Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload to Google Drive": {
+      "main": [
+        [
+          {
+            "node": "Set User Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set User Info": {
+      "main": [
+        [
+          {
+            "node": "Save to Upload Queue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save to Upload Queue": {
+      "main": [
+        [
+          {
+            "node": "Notify User via Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify User via Telegram": {
+      "main": [
+        [
+          {
+            "node": "Respond to Frontend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-11-22T18:30:00.000Z",
+  "versionId": "webhook-upload-v1"
+}
