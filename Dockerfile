@@ -1,38 +1,31 @@
-# Multi-stage build for production
-FROM node:20-alpine AS builder
+# Build stage
+FROM node:20-alpine AS build
 
-WORKDIR /app
+WORKDIR /build
 
 # Copy package files
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci
+RUN npm install
 
-# Copy source code
+# Copy source
 COPY . .
 
-# Build the app
+# Build
 RUN npm run build
 
-# Production stage with nginx
+# Production stage
 FROM nginx:alpine
 
-# Remove default nginx config
-RUN rm /etc/nginx/conf.d/default.conf
+# Copy nginx config with MIME types fix
+COPY --from=build /build/nginx.conf /etc/nginx/conf.d/default.conf
 
-# Copy custom nginx config
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copy built app
+COPY --from=build /build/dist /usr/share/nginx/html
 
-# Copy built files from builder stage to nginx html directory
-COPY --from=builder /app/dist /usr/share/nginx/html
-
-# Expose port 80
+# Expose port
 EXPOSE 80
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --quiet --tries=1 --spider http://localhost/ || exit 1
 
 # Start nginx
 CMD ["nginx", "-g", "daemon off;"]
