@@ -79,18 +79,55 @@
   margin-bottom: 3rem;
 }
 
+.logo-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
 .logo {
   font-size: 2rem;
   font-weight: 700;
   color: var(--color-text-primary);
-  margin-bottom: 0.5rem;
   letter-spacing: -0.02em;
   text-shadow: 0 0 20px rgba(255, 107, 0, 0.5);
+  flex: 1;
+  text-align: center;
 }
 
 .logo-accent {
   color: var(--color-primary);
   text-shadow: 0 0 30px rgba(255, 107, 0, 0.8);
+}
+
+.chat-fab {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-primary) 0%, #ff8533 100%);
+  border: 2px solid rgba(255, 107, 0, 0.4);
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(255, 107, 0, 0.4);
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.chat-fab:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 6px 25px rgba(255, 107, 0, 0.6);
+}
+
+.chat-fab:active {
+  transform: translateY(0) scale(0.98);
 }
 
 h1 {

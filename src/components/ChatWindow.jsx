@@ -6,21 +6,26 @@ function ChatWindow({ videoId, notionPageId, onClose }) {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      content: '✅ Video hochgeladen! Was soll ich damit machen?',
+      content: videoId
+        ? '✅ Video hochgeladen! Was soll ich damit machen?'
+        : '👋 Hey! Ich bin Cornelius. Frag mich was du willst über unser CRM oder sonstige Themen!',
       timestamp: new Date()
     }
   ])
   const [inputValue, setInputValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [streamingText, setStreamingText] = useState('')
+  const [isStreaming, setIsStreaming] = useState(false)
   const messagesEndRef = useRef(null)
   const textareaRef = useRef(null)
+  const streamingIntervalRef = useRef(null)
 
   const CHAT_WEBHOOK_URL = 'https://n8n-self-host-n8n.qpo7vu.easypanel.host/webhook/chat'
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  }, [messages, streamingText])
 
   // Auto-resize textarea
   useEffect(() => {
@@ -29,6 +34,43 @@ function ChatWindow({ videoId, notionPageId, onClose }) {
       textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px'
     }
   }, [inputValue])
+
+  // Cleanup streaming interval on unmount
+  useEffect(() => {
+    return () => {
+      if (streamingIntervalRef.current) {
+        clearInterval(streamingIntervalRef.current)
+      }
+    }
+  }, [])
+
+  // Streaming text effect - simulate typing character by character
+  const streamText = (text) => {
+    setIsStreaming(true)
+    setStreamingText('')
+
+    let index = 0
+    const speed = 20 // milliseconds per character (faster = lower number)
+
+    streamingIntervalRef.current = setInterval(() => {
+      if (index < text.length) {
+        setStreamingText(prev => prev + text[index])
+        index++
+      } else {
+        clearInterval(streamingIntervalRef.current)
+        setIsStreaming(false)
+
+        // Add the complete message to messages array
+        const assistantMessage = {
+          role: 'assistant',
+          content: text,
+          timestamp: new Date()
+        }
+        setMessages(prev => [...prev, assistantMessage])
+        setStreamingText('')
+      }
+    }, speed)
+  }
 
   const buildConversationHistory = () => {
     return messages.map(msg => ({
@@ -75,29 +117,19 @@ function ChatWindow({ videoId, notionPageId, onClose }) {
 
       const data = await response.json()
 
+      setIsLoading(false)
+
       if (data.success && data.response) {
-        // Add assistant response to chat
-        const assistantMessage = {
-          role: 'assistant',
-          content: data.response,
-          timestamp: new Date()
-        }
-        setMessages(prev => [...prev, assistantMessage])
+        // Stream the assistant response character by character
+        streamText(data.response)
       } else {
         throw new Error('No response from AI')
       }
     } catch (error) {
       console.error('Chat error:', error)
-      // Add error message
-      const errorMessage = {
-        role: 'assistant',
-        content: 'Entschuldigung, da ist etwas schief gelaufen. Bitte versuche es erneut.',
-        timestamp: new Date(),
-        isError: true
-      }
-      setMessages(prev => [...prev, errorMessage])
-    } finally {
       setIsLoading(false)
+      // Stream error message
+      streamText('Entschuldigung, da ist etwas schief gelaufen. Bitte versuche es erneut.')
     }
   }
 
@@ -116,9 +148,16 @@ function ChatWindow({ videoId, notionPageId, onClose }) {
             <div className="chat-header-title">
               <span className="chat-logo">Cornelius</span> Chat
             </div>
-            <div className="chat-header-subtitle">
-              Video ID: {videoId?.substring(0, 8)}...
-            </div>
+            {videoId && (
+              <div className="chat-header-subtitle">
+                Video ID: {videoId.substring(0, 8)}...
+              </div>
+            )}
+            {!videoId && (
+              <div className="chat-header-subtitle">
+                Allgemeine Fragen
+              </div>
+            )}
           </div>
           <button className="chat-close-btn" onClick={onClose}>
             <X size={20} />
@@ -142,6 +181,15 @@ function ChatWindow({ videoId, notionPageId, onClose }) {
               </div>
             </div>
           ))}
+
+          {isStreaming && (
+            <div className="chat-message assistant streaming">
+              <div className="chat-message-content">
+                {streamingText}
+                <span className="cursor-blink">|</span>
+              </div>
+            </div>
+          )}
 
           {isLoading && (
             <div className="chat-message assistant typing">

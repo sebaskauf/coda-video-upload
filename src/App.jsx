@@ -11,7 +11,8 @@ function App() {
   const [currentView, setCurrentView] = useState('upload') // 'upload', 'loading', 'success', 'chat'
   const [videoId, setVideoId] = useState(null)
   const [notionPageId, setNotionPageId] = useState(null)
-  const [currentStep, setCurrentStep] = useState(0) // 0: upload, 1: AI, 2: database
+  const [currentStep, setCurrentStep] = useState(0) // 0: upload, 1: AI, 2: database, 3: preparing, 4: complete
+  const [showChatOnUpload, setShowChatOnUpload] = useState(false)
 
   // n8n Webhook URL - Production
   const N8N_WEBHOOK_URL = 'https://n8n-self-host-n8n.qpo7vu.easypanel.host/webhook/video-upload'
@@ -140,13 +141,19 @@ function App() {
         })
 
         if (response.ok) {
-          // Step 1: AI processing (simulate delay for AI description)
-          setCurrentStep(1)
-
           const data = await response.json()
 
-          // Step 2: Database entry
+          // Step 1: AI processing (simulate realistic AI analysis time - 7 seconds)
+          setCurrentStep(1)
+          await new Promise(resolve => setTimeout(resolve, 7000))
+
+          // Step 2: Database entry (simulate database operations - 3 seconds)
           setCurrentStep(2)
+          await new Promise(resolve => setTimeout(resolve, 3000))
+
+          // Step 3: Final preparation (simulate final setup - 2 seconds)
+          setCurrentStep(3)
+          await new Promise(resolve => setTimeout(resolve, 2000))
 
           // Store video_id and notion_page_id from response
           if (data.video_id) {
@@ -175,8 +182,8 @@ function App() {
       }
     }
 
-    // Step 3: Complete
-    setCurrentStep(3)
+    // Step 4: Complete!
+    setCurrentStep(4)
 
     setIsUploading(false)
     setUploadStatus('Upload abgeschlossen!')
@@ -189,10 +196,10 @@ function App() {
       setNotionPageId(lastNotionPageId)
     }
 
-    // Small delay before switching to chat
-    await new Promise(resolve => setTimeout(resolve, 800))
+    // Small delay to show "Fertig!" animation
+    await new Promise(resolve => setTimeout(resolve, 1500))
 
-    // Switch to chat view after upload completes (instead of success)
+    // Switch to chat view after upload completes
     setCurrentView('chat')
   }
 
@@ -223,7 +230,8 @@ function App() {
       { id: 0, label: 'Video wird hochgeladen', icon: '📤' },
       { id: 1, label: 'Video wird durch KI beschrieben', icon: '🤖' },
       { id: 2, label: 'Video wird in die Datenbank eingetragen', icon: '💾' },
-      { id: 3, label: 'Fertig!', icon: '✅' }
+      { id: 3, label: 'Bereitet alles vor...', icon: '⚙️' },
+      { id: 4, label: 'Fertig!', icon: '✅' }
     ]
 
     return (
@@ -269,13 +277,29 @@ function App() {
           onClose={handleCloseChat}
         />
       )}
+      {showChatOnUpload && (
+        <ChatWindow
+          videoId={null}
+          notionPageId={null}
+          onClose={() => setShowChatOnUpload(false)}
+        />
+      )}
       <div className="container">
         {currentView === 'loading' && <LoadingView />}
         {currentView === 'upload' && (
         <>
         <div className="header">
-          <div className="logo">
-            <span className="logo-accent">CODA</span> Marketing Video Upload
+          <div className="logo-header-row">
+            <div className="logo">
+              <span className="logo-accent">CODA</span> Marketing Video Upload
+            </div>
+            <button
+              className="chat-fab"
+              onClick={() => setShowChatOnUpload(true)}
+              title="Hast du Fragen? Chatte mit mir!"
+            >
+              💬
+            </button>
           </div>
           <h1>Corn. Lade hier einfach die Videos & Thumbnails hoch</h1>
           <p className="subtitle">
