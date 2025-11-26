@@ -241,29 +241,29 @@
 
 @media (max-width: 768px) {
   .mascot-container {
-    top: 1.5rem;
+    top: 3.25rem;
   }
 
   .mascot {
-    width: 180px;
+    width: 300px;
   }
 
   .mascot-hand {
-    width: 55px;
+    width: 60px;
   }
 
   .mascot-hand-left {
-    left: calc(50% - 175px);
-    top: calc(14rem + 80px);
+    left: calc(50% - 270px);
+    top: calc(10rem + 150px);
   }
 
   .mascot-hand-right {
-    right: calc(50% - 175px);
-    top: calc(14rem + 80px);
+    right: calc(50% - 270px);
+    top: calc(10rem + 150px);
   }
 
   .app {
-    padding-top: 14rem;
+    padding-top: 10rem;
   }
 
   .container {
@@ -274,29 +274,29 @@
 
 @media (max-width: 480px) {
   .mascot-container {
-    top: 1rem;
+    top: 2rem;
   }
 
   .mascot {
-    width: 140px;
+    width: 220px;
   }
 
   .mascot-hand {
-    width: 45px;
+    width: 50px;
   }
 
   .mascot-hand-left {
-    left: calc(50% - 150px);
-    top: calc(11rem + 70px);
+    left: calc(50% - 200px);
+    top: calc(8rem + 80px);
   }
 
   .mascot-hand-right {
-    right: calc(50% - 150px);
-    top: calc(11rem + 70px);
+    right: calc(50% - 200px);
+    top: calc(8rem + 80px);
   }
 
   .app {
-    padding-top: 11rem;
+    padding-top: 8rem;
   }
 
   .container {
@@ -326,29 +326,29 @@
 
 @media (max-width: 380px) {
   .mascot-container {
-    top: 0.75rem;
+    top: 1.5rem;
   }
 
   .mascot {
-    width: 120px;
+    width: 180px;
   }
 
   .mascot-hand {
-    width: 40px;
+    width: 45px;
   }
 
   .mascot-hand-left {
-    left: calc(50% - 135px);
-    top: calc(9rem + 60px);
+    left: calc(50% - 175px);
+    top: calc(6rem + 70px);
   }
 
   .mascot-hand-right {
-    right: calc(50% - 135px);
-    top: calc(9rem + 60px);
+    right: calc(50% - 175px);
+    top: calc(6rem + 70px);
   }
 
   .app {
-    padding-top: 9rem;
+    padding-top: 6rem;
   }
 
   .container {
@@ -1345,12 +1345,13 @@ h1 {
 @media (max-width: 768px) {
   .app {
     padding: 0.75rem;
+    padding-top: 10rem;
     overflow-x: hidden;
   }
 
   .container {
     padding: 1.5rem 1rem;
-    max-width: 100%;
+    max-width: calc(100% - 80px);
     width: 100%;
     box-sizing: border-box;
   }
@@ -1511,11 +1512,13 @@ h1 {
 @media (max-width: 480px) {
   .app {
     padding: 0.5rem;
+    padding-top: 8rem;
   }
 
   .container {
     padding: 1.25rem 0.875rem;
     border-radius: 12px;
+    max-width: calc(100% - 60px);
   }
 
   .logo-image {
