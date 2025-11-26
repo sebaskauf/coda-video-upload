@@ -241,57 +241,119 @@
 
 @media (max-width: 768px) {
   .mascot-container {
-    top: 1rem;
+    top: 1.5rem;
   }
 
   .mascot {
-    width: 200px;
+    width: 180px;
   }
 
   .mascot-hand {
-    width: 60px;
+    width: 55px;
   }
 
   .mascot-hand-left {
-    left: calc(50% - 160px);
-    top: calc(1rem + 260px);
+    left: calc(50% - 175px);
+    top: calc(1.5rem + 200px);
   }
 
   .mascot-hand-right {
-    right: calc(50% - 160px);
-    top: calc(1rem + 260px);
+    right: calc(50% - 175px);
+    top: calc(1.5rem + 200px);
   }
 
   .app {
-    padding-top: 8rem;
+    padding-top: 7rem;
+  }
+
+  .container {
+    padding: 1.5rem 1rem;
+    max-width: calc(100% - 80px);
   }
 }
 
 @media (max-width: 480px) {
   .mascot-container {
-    top: 0.5rem;
+    top: 1rem;
   }
 
   .mascot {
-    width: 160px;
+    width: 140px;
   }
 
   .mascot-hand {
-    width: 50px;
+    width: 45px;
   }
 
   .mascot-hand-left {
-    left: calc(50% - 130px);
-    top: calc(0.5rem + 220px);
+    left: calc(50% - 150px);
+    top: calc(1rem + 160px);
   }
 
   .mascot-hand-right {
-    right: calc(50% - 130px);
-    top: calc(0.5rem + 220px);
+    right: calc(50% - 150px);
+    top: calc(1rem + 160px);
   }
 
   .app {
-    padding-top: 6rem;
+    padding-top: 5.5rem;
+  }
+
+  .container {
+    padding: 1.25rem 0.875rem;
+    max-width: calc(100% - 60px);
+  }
+
+  .dropzone {
+    padding: 1.5rem 0.75rem;
+    min-height: auto;
+  }
+
+  .upload-icon {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 0.75rem;
+  }
+
+  .dropzone-text {
+    font-size: 0.875rem;
+  }
+
+  .dropzone-hint {
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .mascot-container {
+    top: 0.75rem;
+  }
+
+  .mascot {
+    width: 120px;
+  }
+
+  .mascot-hand {
+    width: 40px;
+  }
+
+  .mascot-hand-left {
+    left: calc(50% - 135px);
+    top: calc(0.75rem + 140px);
+  }
+
+  .mascot-hand-right {
+    right: calc(50% - 135px);
+    top: calc(0.75rem + 140px);
+  }
+
+  .app {
+    padding-top: 5rem;
+  }
+
+  .container {
+    padding: 1rem 0.75rem;
+    max-width: calc(100% - 50px);
   }
 }
 /* ======================================== */
