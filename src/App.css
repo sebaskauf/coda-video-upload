@@ -274,7 +274,7 @@
 
 @media (max-width: 480px) {
   .mascot-container {
-    top: 2.5rem;
+    top: 4rem;
   }
 
   .mascot {
@@ -326,7 +326,7 @@
 
 @media (max-width: 380px) {
   .mascot-container {
-    top: 2rem;
+    top: 3.5rem;
   }
 
   .mascot {
@@ -473,6 +473,7 @@ h1 {
 
 /* Typewriter Effect */
 .typewriter-container {
+  height: 80px;
   min-height: 80px;
 }
 
@@ -482,10 +483,12 @@ h1 {
   margin-bottom: 0.75rem;
   font-weight: 600;
   letter-spacing: -0.02em;
+  height: 2.5rem;
   min-height: 2.5rem;
 }
 
 .typewriter-subtitle {
+  height: 1.5rem;
   min-height: 1.5rem;
 }
 
@@ -1519,6 +1522,22 @@ h1 {
     padding: 1.25rem 0.875rem;
     border-radius: 12px;
     max-width: calc(100% - 70px);
+  }
+
+  .typewriter-container {
+    height: 70px;
+    min-height: 70px;
+  }
+
+  .typewriter-title {
+    font-size: 1.125rem;
+    height: 1.75rem;
+    min-height: 1.75rem;
+  }
+
+  .typewriter-subtitle {
+    height: 1.25rem;
+    min-height: 1.25rem;
   }
 
   .logo-image {
