@@ -274,11 +274,11 @@
 
 @media (max-width: 480px) {
   .mascot-container {
-    top: 2rem;
+    top: 2.5rem;
   }
 
   .mascot {
-    width: 220px;
+    width: 240px;
   }
 
   .mascot-hand {
@@ -287,12 +287,12 @@
 
   .mascot-hand-left {
     left: calc(50% - 200px);
-    top: calc(8rem + 80px);
+    top: calc(8rem + 120px);
   }
 
   .mascot-hand-right {
     right: calc(50% - 200px);
-    top: calc(8rem + 80px);
+    top: calc(8rem + 120px);
   }
 
   .app {
@@ -301,7 +301,7 @@
 
   .container {
     padding: 1.25rem 0.875rem;
-    max-width: calc(100% - 60px);
+    max-width: calc(100% - 70px);
   }
 
   .dropzone {
@@ -326,34 +326,34 @@
 
 @media (max-width: 380px) {
   .mascot-container {
-    top: 1.5rem;
+    top: 2rem;
   }
 
   .mascot {
-    width: 180px;
+    width: 200px;
   }
 
   .mascot-hand {
-    width: 45px;
+    width: 42px;
   }
 
   .mascot-hand-left {
-    left: calc(50% - 175px);
-    top: calc(6rem + 70px);
+    left: calc(50% - 165px);
+    top: calc(7rem + 100px);
   }
 
   .mascot-hand-right {
-    right: calc(50% - 175px);
-    top: calc(6rem + 70px);
+    right: calc(50% - 165px);
+    top: calc(7rem + 100px);
   }
 
   .app {
-    padding-top: 6rem;
+    padding-top: 7rem;
   }
 
   .container {
     padding: 1rem 0.75rem;
-    max-width: calc(100% - 50px);
+    max-width: calc(100% - 55px);
   }
 }
 /* ======================================== */
@@ -1518,7 +1518,7 @@ h1 {
   .container {
     padding: 1.25rem 0.875rem;
     border-radius: 12px;
-    max-width: calc(100% - 60px);
+    max-width: calc(100% - 70px);
   }
 
   .logo-image {
