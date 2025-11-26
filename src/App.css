@@ -254,16 +254,16 @@
 
   .mascot-hand-left {
     left: calc(50% - 175px);
-    top: calc(1.5rem + 200px);
+    top: calc(14rem + 80px);
   }
 
   .mascot-hand-right {
     right: calc(50% - 175px);
-    top: calc(1.5rem + 200px);
+    top: calc(14rem + 80px);
   }
 
   .app {
-    padding-top: 7rem;
+    padding-top: 14rem;
   }
 
   .container {
@@ -287,16 +287,16 @@
 
   .mascot-hand-left {
     left: calc(50% - 150px);
-    top: calc(1rem + 160px);
+    top: calc(11rem + 70px);
   }
 
   .mascot-hand-right {
     right: calc(50% - 150px);
-    top: calc(1rem + 160px);
+    top: calc(11rem + 70px);
   }
 
   .app {
-    padding-top: 5.5rem;
+    padding-top: 11rem;
   }
 
   .container {
@@ -339,16 +339,16 @@
 
   .mascot-hand-left {
     left: calc(50% - 135px);
-    top: calc(0.75rem + 140px);
+    top: calc(9rem + 60px);
   }
 
   .mascot-hand-right {
     right: calc(50% - 135px);
-    top: calc(0.75rem + 140px);
+    top: calc(9rem + 60px);
   }
 
   .app {
-    padding-top: 5rem;
+    padding-top: 9rem;
   }
 
   .container {
