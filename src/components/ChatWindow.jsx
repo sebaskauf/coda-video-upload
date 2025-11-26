@@ -1,24 +1,158 @@
 import { useState, useRef, useEffect } from 'react'
-import { Send, Loader2, X } from 'lucide-react'
+import { Send, Loader2, X, Square } from 'lucide-react'
 import './ChatWindow.css'
 
+// Chat Mascot Component
+const ChatMascot = ({ mouthOpen, isListening, isThinking }) => {
+  // Determine mascot state class
+  let stateClass = ''
+  if (isListening) stateClass = 'listening'
+  else if (isThinking) stateClass = 'thinking'
+
+  return (
+    <div className={`chat-mascot ${stateClass}`}>
+      <svg viewBox="0 0 200 250" fill="none" xmlns="http://www.w3.org/2000/svg">
+        {/* Body */}
+        <ellipse cx="100" cy="180" rx="60" ry="50" fill="url(#chatMascotGradient)" />
+
+        {/* Ear - behind head, visible when listening */}
+        <ellipse
+          cx="170"
+          cy="75"
+          rx="18"
+          ry="25"
+          fill="url(#chatMascotEarGradient)"
+          className={`chat-mascot-ear ${isListening ? 'listening' : ''}`}
+        />
+        {/* Inner ear detail */}
+        <ellipse
+          cx="172"
+          cy="75"
+          rx="10"
+          ry="16"
+          fill="url(#chatMascotEarInnerGradient)"
+          className={`chat-mascot-ear-inner ${isListening ? 'listening' : ''}`}
+        />
+
+        {/* Head - drawn after ear so it's in front */}
+        <ellipse cx="100" cy="90" rx="70" ry="60" fill="url(#chatMascotGradient)" />
+
+        {/* Eyes - squint when listening, look up when thinking */}
+        <ellipse
+          cx="75"
+          cy={isThinking ? "78" : "80"}
+          rx="12"
+          ry={isListening ? "8" : "15"}
+          fill="white"
+          className={`chat-mascot-eye chat-mascot-eye-left ${isListening ? 'squinting' : ''} ${isThinking ? 'thinking' : ''}`}
+        />
+        <ellipse
+          cx="125"
+          cy={isThinking ? "78" : "80"}
+          rx="12"
+          ry={isListening ? "8" : "15"}
+          fill="white"
+          className={`chat-mascot-eye chat-mascot-eye-right ${isListening ? 'squinting' : ''} ${isThinking ? 'thinking' : ''}`}
+        />
+
+        {/* Thinking dots above head */}
+        {isThinking && (
+          <>
+            <circle cx="160" cy="30" r="6" fill="#ff8533" className="thinking-dot thinking-dot-1" />
+            <circle cx="175" cy="15" r="8" fill="#ff8533" className="thinking-dot thinking-dot-2" />
+            <circle cx="195" cy="5" r="10" fill="#ff8533" className="thinking-dot thinking-dot-3" />
+          </>
+        )}
+
+        {/* Mouth */}
+        <ellipse
+          cx="100"
+          cy="110"
+          rx="10"
+          ry={mouthOpen ? "8" : "3"}
+          fill="white"
+          className="chat-mascot-mouth"
+        />
+
+        {/* Arms */}
+        <ellipse cx="35" cy="170" rx="20" ry="25" fill="url(#chatMascotGradient)" className={`chat-mascot-arm-left ${isThinking ? 'thinking' : ''}`} />
+        <ellipse cx="165" cy="170" rx="20" ry="25" fill="url(#chatMascotGradient)" className={`chat-mascot-arm-right ${isThinking ? 'thinking' : ''}`} />
+
+        <defs>
+          <linearGradient id="chatMascotGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#ff6b00" />
+            <stop offset="50%" stopColor="#ff8533" />
+            <stop offset="100%" stopColor="#ff6b00" />
+          </linearGradient>
+          <linearGradient id="chatMascotEarGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#ff6b00" />
+            <stop offset="100%" stopColor="#ff8533" />
+          </linearGradient>
+          <radialGradient id="chatMascotEarInnerGradient" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#cc5500" />
+            <stop offset="100%" stopColor="#ff6b00" />
+          </radialGradient>
+        </defs>
+      </svg>
+    </div>
+  )
+}
+
 function ChatWindow({ videoId, notionPageId, onClose }) {
-  const [messages, setMessages] = useState([
-    {
-      role: 'assistant',
-      content: videoId
-        ? '✅ Video hochgeladen! Was soll ich damit machen?'
-        : '👋 Hey! Ich bin Cornelius. Frag mich was du willst über unser CRM oder sonstige Themen!',
-      timestamp: new Date()
-    }
-  ])
+  const [messages, setMessages] = useState([])
   const [inputValue, setInputValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [streamingText, setStreamingText] = useState('')
   const [isStreaming, setIsStreaming] = useState(false)
+  const [initialTypingText, setInitialTypingText] = useState('')
+  const [isInitialTyping, setIsInitialTyping] = useState(true)
+  const [mouthOpen, setMouthOpen] = useState(false)
+  const [isListening, setIsListening] = useState(false)
+  const [isThinking, setIsThinking] = useState(false)
   const messagesEndRef = useRef(null)
   const textareaRef = useRef(null)
   const streamingIntervalRef = useRef(null)
+  const initialTypingRef = useRef(null)
+  const abortControllerRef = useRef(null)
+
+  // Initial greeting message with typewriter effect
+  const initialMessage = videoId
+    ? '✅ Video hochgeladen! Was soll ich damit machen?'
+    : '👋 Hey! Ich bin Quandale. Frag mich was du willst über unser CRM oder sonstige Themen!'
+
+  // Typewriter effect for initial message
+  useEffect(() => {
+    let index = 0
+    setIsInitialTyping(true)
+    setInitialTypingText('')
+
+    initialTypingRef.current = setInterval(() => {
+      if (index < initialMessage.length) {
+        // Open mouth for each character
+        setMouthOpen(true)
+        setTimeout(() => setMouthOpen(false), 20)
+        setInitialTypingText(initialMessage.substring(0, index + 1))
+        index++
+      } else {
+        clearInterval(initialTypingRef.current)
+        setIsInitialTyping(false)
+        setMouthOpen(false)
+        // Add the complete message to messages array
+        setMessages([{
+          role: 'assistant',
+          content: initialMessage,
+          timestamp: new Date()
+        }])
+        setInitialTypingText('')
+      }
+    }, 30)
+
+    return () => {
+      if (initialTypingRef.current) {
+        clearInterval(initialTypingRef.current)
+      }
+    }
+  }, [])
 
   const CHAT_WEBHOOK_URL = 'https://n8n-self-host-n8n.qpo7vu.easypanel.host/webhook/chat'
 
@@ -27,22 +161,57 @@ function ChatWindow({ videoId, notionPageId, onClose }) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, streamingText])
 
-  // Auto-resize textarea
+  // Auto-resize textarea and set listening state
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto'
       textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px'
     }
+    // Set listening when user is typing
+    setIsListening(inputValue.length > 0)
   }, [inputValue])
 
-  // Cleanup streaming interval on unmount
+  // Cleanup streaming interval and abort controller on unmount
   useEffect(() => {
     return () => {
       if (streamingIntervalRef.current) {
         clearInterval(streamingIntervalRef.current)
       }
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort()
+      }
     }
   }, [])
+
+  // Stop generation function
+  const handleStopGeneration = () => {
+    // Abort the fetch request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+    }
+
+    // Stop the streaming text animation
+    if (streamingIntervalRef.current) {
+      clearInterval(streamingIntervalRef.current)
+    }
+
+    // If there's partial streaming text, add it as a message
+    if (streamingText) {
+      const partialMessage = {
+        role: 'assistant',
+        content: streamingText + ' [abgebrochen]',
+        timestamp: new Date()
+      }
+      setMessages(prev => [...prev, partialMessage])
+    }
+
+    // Reset states
+    setStreamingText('')
+    setIsStreaming(false)
+    setIsLoading(false)
+    setIsThinking(false)
+    setMouthOpen(false)
+  }
 
   // Streaming text effect - simulate typing character by character
   const streamText = (text) => {
@@ -50,6 +219,8 @@ function ChatWindow({ videoId, notionPageId, onClose }) {
 
     setIsStreaming(true)
     setStreamingText('')
+    setIsListening(false)
+    setIsThinking(false)
 
     let currentText = ''
     let index = 0
@@ -57,12 +228,15 @@ function ChatWindow({ videoId, notionPageId, onClose }) {
 
     streamingIntervalRef.current = setInterval(() => {
       if (index < text.length) {
+        // Toggle mouth open/close for each character
+        setMouthOpen(index % 2 === 0)
         currentText += text[index]
         setStreamingText(currentText)
         index++
       } else {
         clearInterval(streamingIntervalRef.current)
         setIsStreaming(false)
+        setMouthOpen(false)
 
         // Add the complete message to messages array
         const assistantMessage = {
@@ -88,6 +262,8 @@ function ChatWindow({ videoId, notionPageId, onClose }) {
 
     const userMessage = inputValue.trim()
     setInputValue('')
+    setIsListening(false)
+    setIsThinking(true)
 
     // Add user message to chat
     const newUserMessage = {
@@ -105,6 +281,9 @@ function ChatWindow({ videoId, notionPageId, onClose }) {
         { role: 'user', content: userMessage }
       ]
 
+      // Create abort controller for this request
+      abortControllerRef.current = new AbortController()
+
       // Call chat webhook
       const response = await fetch(CHAT_WEBHOOK_URL, {
         method: 'POST',
@@ -116,7 +295,8 @@ function ChatWindow({ videoId, notionPageId, onClose }) {
           video_id: videoId,
           notion_page_id: notionPageId,
           conversation_history: conversationHistory
-        })
+        }),
+        signal: abortControllerRef.current.signal
       })
 
       const data = await response.json()
@@ -130,8 +310,13 @@ function ChatWindow({ videoId, notionPageId, onClose }) {
         throw new Error('No response from AI')
       }
     } catch (error) {
+      // Don't show error if request was aborted
+      if (error.name === 'AbortError') {
+        return
+      }
       console.error('Chat error:', error)
       setIsLoading(false)
+      setIsThinking(false)
       // Stream error message
       streamText('Entschuldigung, da ist etwas schief gelaufen. Bitte versuche es erneut.')
     }
@@ -146,11 +331,12 @@ function ChatWindow({ videoId, notionPageId, onClose }) {
 
   return (
     <div className="chat-overlay">
+      <ChatMascot mouthOpen={mouthOpen} isListening={isListening} isThinking={isThinking} />
       <div className="chat-window">
         <div className="chat-header">
           <div className="chat-header-info">
             <div className="chat-header-title">
-              <span className="chat-logo">Cornelius</span> Chat
+              <span className="chat-logo">Quandale</span> Chat
             </div>
             {videoId && (
               <div className="chat-header-subtitle">
@@ -169,6 +355,16 @@ function ChatWindow({ videoId, notionPageId, onClose }) {
         </div>
 
         <div className="chat-messages">
+          {/* Initial typing effect */}
+          {isInitialTyping && (
+            <div className="chat-message assistant streaming">
+              <div className="chat-message-content">
+                {initialTypingText}
+                <span className="cursor-blink">|</span>
+              </div>
+            </div>
+          )}
+
           {messages.map((message, index) => (
             <div
               key={index}
@@ -221,17 +417,22 @@ function ChatWindow({ videoId, notionPageId, onClose }) {
             disabled={isLoading}
             rows={1}
           />
-          <button
-            className="chat-send-btn"
-            onClick={handleSendMessage}
-            disabled={!inputValue.trim() || isLoading}
-          >
-            {isLoading ? (
-              <Loader2 size={20} className="spin" />
-            ) : (
+          {(isLoading || isStreaming) ? (
+            <button
+              className="chat-stop-btn"
+              onClick={handleStopGeneration}
+            >
+              <Square size={18} />
+            </button>
+          ) : (
+            <button
+              className="chat-send-btn"
+              onClick={handleSendMessage}
+              disabled={!inputValue.trim()}
+            >
               <Send size={20} />
-            )}
-          </button>
+            </button>
+          )}
         </div>
       </div>
     </div>

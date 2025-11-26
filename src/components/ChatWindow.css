@@ -5,22 +5,238 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(10px);
+  background: #000000;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 2rem;
   z-index: 9999;
-  padding: 1rem;
-  animation: fadeIn 0.3s ease;
+  padding: 2rem;
+  animation: overlayFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes fadeIn {
+@keyframes overlayFadeIn {
   from {
     opacity: 0;
   }
   to {
     opacity: 1;
+  }
+}
+
+/* Chat Mascot */
+.chat-mascot {
+  width: 200px;
+  height: auto;
+  filter: drop-shadow(0 10px 30px rgba(255, 107, 0, 0.4));
+  animation: mascotBounce 3s ease-in-out infinite;
+  flex-shrink: 0;
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: visible;
+}
+
+.chat-mascot svg {
+  overflow: visible;
+}
+
+@keyframes mascotBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+}
+
+/* Listening state - lean toward textfield */
+.chat-mascot.listening {
+  animation: mascotListenStart 0.5s ease-out forwards, mascotListen 2s ease-in-out 0.5s infinite;
+}
+
+@keyframes mascotListenStart {
+  0% {
+    transform: translateX(0) translateY(0) rotate(0deg);
+  }
+  100% {
+    transform: translateX(20px) translateY(40px) rotate(12deg);
+  }
+}
+
+@keyframes mascotListen {
+  0%, 100% {
+    transform: translateX(20px) translateY(40px) rotate(12deg);
+  }
+  50% {
+    transform: translateX(25px) translateY(45px) rotate(14deg);
+  }
+}
+
+/* Thinking state - back to center, look up thoughtfully */
+.chat-mascot.thinking {
+  animation: mascotThink 2s ease-in-out infinite;
+  transform: translateY(0);
+}
+
+@keyframes mascotThink {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-5px) rotate(-3deg);
+  }
+  75% {
+    transform: translateY(-5px) rotate(3deg);
+  }
+}
+
+/* Mascot Ear */
+.chat-mascot-ear,
+.chat-mascot-ear-inner {
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all 0.5s ease-out;
+}
+
+.chat-mascot-ear.listening,
+.chat-mascot-ear-inner.listening {
+  opacity: 1;
+  transform: scale(1);
+  animation: earWiggle 1.2s ease-in-out infinite;
+}
+
+@keyframes earWiggle {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    transform: scale(1.05) rotate(3deg);
+  }
+}
+
+/* Mascot Eyes */
+.chat-mascot-eye {
+  animation: chatMascotBlink 4s ease-in-out infinite;
+  transition: ry 0.2s ease-out;
+}
+
+.chat-mascot-eye-right {
+  animation-delay: 0.1s;
+}
+
+.chat-mascot-eye.squinting {
+  animation: none;
+}
+
+@keyframes chatMascotBlink {
+  0%, 45%, 55%, 100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(0.1);
+  }
+}
+
+/* Mascot Mouth */
+.chat-mascot-mouth {
+  transition: ry 0.05s ease-out;
+}
+
+/* Mascot Arms */
+.chat-mascot-arm-left {
+  transform-origin: center;
+  animation: armWaveLeft 2s ease-in-out infinite;
+}
+
+.chat-mascot-arm-right {
+  transform-origin: center;
+  animation: armWaveRight 2s ease-in-out infinite;
+  animation-delay: 0.5s;
+}
+
+@keyframes armWaveLeft {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-10deg);
+  }
+}
+
+@keyframes armWaveRight {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(10deg);
+  }
+}
+
+/* Thinking arm - hand on chin */
+.chat-mascot-arm-left.thinking {
+  animation: armThinkLeft 2s ease-in-out infinite;
+}
+
+.chat-mascot-arm-right.thinking {
+  animation: armThinkRight 2s ease-in-out infinite;
+}
+
+@keyframes armThinkLeft {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) translateX(15px) rotate(30deg);
+  }
+}
+
+@keyframes armThinkRight {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-5deg);
+  }
+}
+
+/* Thinking dots */
+.thinking-dot {
+  animation: thinkingFloat 1.5s ease-in-out infinite;
+}
+
+.thinking-dot-1 {
+  animation-delay: 0s;
+}
+
+.thinking-dot-2 {
+  animation-delay: 0.2s;
+}
+
+.thinking-dot-3 {
+  animation-delay: 0.4s;
+}
+
+@keyframes thinkingFloat {
+  0%, 100% {
+    opacity: 0.4;
+    transform: translateY(0) scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-8px) scale(1.1);
+  }
+}
+
+/* Eyes when thinking - look up */
+.chat-mascot-eye.thinking {
+  animation: eyesLookUp 2s ease-in-out infinite;
+}
+
+@keyframes eyesLookUp {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
   }
 }
 
@@ -39,17 +255,21 @@
     0 0 0 1px rgba(255, 107, 0, 0.3),
     inset 0 0 60px rgba(255, 107, 0, 0.05);
   border: 1px solid rgba(255, 107, 0, 0.3);
-  animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: chatWindowOpen 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
   position: relative;
 }
 
-@keyframes slideUp {
-  from {
-    transform: translateY(40px);
+@keyframes chatWindowOpen {
+  0% {
+    transform: scale(0.8) translateY(60px);
     opacity: 0;
   }
-  to {
-    transform: translateY(0);
+  50% {
+    transform: scale(1.02) translateY(-10px);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) translateY(0);
     opacity: 1;
   }
 }
@@ -343,6 +563,33 @@
   transform: none;
 }
 
+.chat-stop-btn {
+  background: linear-gradient(135deg, #ff4444 0%, #cc3333 100%);
+  border: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: white;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(255, 68, 68, 0.4);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.chat-stop-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 68, 68, 0.6);
+}
+
+.chat-stop-btn:active {
+  transform: translateY(0);
+}
+
 .spin {
   animation: spin 1s linear infinite;
 }
@@ -357,16 +604,42 @@
 }
 
 /* Mobile Optimizations */
+@media (max-width: 900px) {
+  .chat-overlay {
+    flex-direction: column;
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .chat-mascot {
+    width: 120px;
+    position: relative;
+    order: -1;
+  }
+
+  .chat-window {
+    height: auto;
+    max-height: 70vh;
+    flex: 1;
+  }
+}
+
 @media (max-width: 768px) {
   .chat-overlay {
-    padding: 0;
+    padding: 0.5rem;
+    padding-top: 1rem;
+  }
+
+  .chat-mascot {
+    width: 100px;
   }
 
   .chat-window {
     max-width: 100%;
-    height: 100%;
-    max-height: 100vh;
-    border-radius: 0;
+    height: auto;
+    max-height: 75vh;
+    border-radius: 16px;
+    flex: 1;
   }
 
   .chat-header {
@@ -400,6 +673,14 @@
 }
 
 @media (max-width: 480px) {
+  .chat-mascot {
+    width: 80px;
+  }
+
+  .chat-window {
+    max-height: 80vh;
+  }
+
   .chat-message {
     max-width: 90%;
   }
