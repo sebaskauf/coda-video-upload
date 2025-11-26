@@ -242,6 +242,11 @@
 @media (max-width: 768px) {
   .mascot-container {
     top: 3.25rem;
+    position: absolute;
+  }
+
+  .mascot-hand {
+    position: absolute;
   }
 
   .mascot {

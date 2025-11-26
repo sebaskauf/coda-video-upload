@@ -202,11 +202,25 @@ function App() {
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i]
+
+      // Verify file is valid before upload
+      if (!file || !(file instanceof File)) {
+        console.error('Invalid file object:', file)
+        setUploadProgress(prev => ({
+          ...prev,
+          [file?.name || 'unknown']: 'Fehler'
+        }))
+        continue
+      }
+
+      console.log('Uploading file:', file.name, 'Size:', file.size, 'Type:', file.type)
+
       const formData = new FormData()
-      formData.append('file', file)
+      // Append file with explicit filename and type
+      formData.append('file', file, file.name)
       formData.append('fileName', file.name)
-      formData.append('fileSize', file.size)
-      formData.append('mimeType', file.type)
+      formData.append('fileSize', String(file.size))
+      formData.append('mimeType', file.type || 'video/mp4')
       formData.append('fileType', 'video')
 
       try {
@@ -214,6 +228,7 @@ function App() {
         const response = await fetch(N8N_WEBHOOK_URL, {
           method: 'POST',
           body: formData,
+          // Don't set Content-Type - browser sets it automatically with boundary
         })
 
         if (response.ok) {
