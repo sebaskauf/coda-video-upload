@@ -98,7 +98,16 @@ const ChatMascot = ({ mouthOpen, isListening, isThinking }) => {
   )
 }
 
-function ChatWindow({ videoId, notionPageId, onClose }) {
+function ChatWindow({
+  videoId,
+  notionPageId,
+  onClose,
+  uploadState = 'idle',
+  uploadProgress = 0,
+  fileName = '',
+  fileSize = 0,
+  timeRemaining = ''
+}) {
   const [messages, setMessages] = useState([])
   const [inputValue, setInputValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -109,16 +118,34 @@ function ChatWindow({ videoId, notionPageId, onClose }) {
   const [mouthOpen, setMouthOpen] = useState(false)
   const [isListening, setIsListening] = useState(false)
   const [isThinking, setIsThinking] = useState(false)
+  const [pendingMessage, setPendingMessage] = useState(null)
   const messagesEndRef = useRef(null)
   const textareaRef = useRef(null)
   const streamingIntervalRef = useRef(null)
   const initialTypingRef = useRef(null)
   const abortControllerRef = useRef(null)
 
-  // Initial greeting message with typewriter effect
-  const initialMessage = videoId
-    ? '✅ Video hochgeladen! Was soll ich damit machen?'
-    : '👋 Hey! Ich bin Quandale. Frag mich was du willst über unser CRM oder sonstige Themen!'
+  // Format file size
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes'
+    const k = 1024
+    const sizes = ['Bytes', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return Math.round(bytes / Math.pow(k, i)) + ' ' + sizes[i]
+  }
+
+  // Initial greeting message based on upload state
+  const getInitialMessage = () => {
+    if (uploadState === 'uploading') {
+      return '📹 Video wird hochgeladen... Du kannst mir schon sagen, was ich damit machen soll!'
+    }
+    if (uploadState === 'complete' || videoId) {
+      return '✅ Video hochgeladen! Was soll ich damit machen?'
+    }
+    return '👋 Hey! Ich bin Quandale. Frag mich was du willst über unser CRM oder sonstige Themen!'
+  }
+
+  const initialMessage = getInitialMessage()
 
   // Typewriter effect for initial message
   useEffect(() => {
@@ -155,6 +182,15 @@ function ChatWindow({ videoId, notionPageId, onClose }) {
   }, [])
 
   const CHAT_WEBHOOK_URL = 'https://n8n-self-host-n8n.qpo7vu.easypanel.host/webhook/chat'
+
+  // Send pending message when upload completes
+  useEffect(() => {
+    if (uploadState === 'complete' && pendingMessage && videoId) {
+      // Upload just completed and we have a pending message - send it now
+      sendMessageToApi(pendingMessage)
+      setPendingMessage(null)
+    }
+  }, [uploadState, videoId])
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -257,21 +293,9 @@ function ChatWindow({ videoId, notionPageId, onClose }) {
     }))
   }
 
-  const handleSendMessage = async () => {
-    if (!inputValue.trim() || isLoading) return
-
-    const userMessage = inputValue.trim()
-    setInputValue('')
-    setIsListening(false)
+  // Core function to send message to API
+  const sendMessageToApi = async (userMessage) => {
     setIsThinking(true)
-
-    // Add user message to chat
-    const newUserMessage = {
-      role: 'user',
-      content: userMessage,
-      timestamp: new Date()
-    }
-    setMessages(prev => [...prev, newUserMessage])
     setIsLoading(true)
 
     try {
@@ -322,6 +346,39 @@ function ChatWindow({ videoId, notionPageId, onClose }) {
     }
   }
 
+  const handleSendMessage = async () => {
+    if (!inputValue.trim() || isLoading) return
+
+    const userMessage = inputValue.trim()
+    setInputValue('')
+    setIsListening(false)
+
+    // Add user message to chat
+    const newUserMessage = {
+      role: 'user',
+      content: userMessage,
+      timestamp: new Date()
+    }
+    setMessages(prev => [...prev, newUserMessage])
+
+    // If upload is still in progress, save as pending message
+    if (uploadState === 'uploading') {
+      setPendingMessage(userMessage)
+      // Add a system message to indicate waiting
+      const waitingMessage = {
+        role: 'assistant',
+        content: '⏳ Warte auf Video-Upload... Ich antworte gleich!',
+        timestamp: new Date(),
+        isWaiting: true
+      }
+      setMessages(prev => [...prev, waitingMessage])
+      return
+    }
+
+    // Upload complete or no upload - send immediately
+    await sendMessageToApi(userMessage)
+  }
+
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
@@ -338,12 +395,12 @@ function ChatWindow({ videoId, notionPageId, onClose }) {
             <div className="chat-header-title">
               <span className="chat-logo">Quandale</span> Chat
             </div>
-            {videoId && (
+            {videoId && uploadState === 'complete' && (
               <div className="chat-header-subtitle">
-                Video ID: {videoId.substring(0, 8)}...
+                ✅ Video bereit
               </div>
             )}
-            {!videoId && (
+            {!videoId && uploadState !== 'uploading' && (
               <div className="chat-header-subtitle">
                 Allgemeine Fragen
               </div>
@@ -353,6 +410,35 @@ function ChatWindow({ videoId, notionPageId, onClose }) {
             <X size={20} />
           </button>
         </div>
+
+        {/* Upload Progress Bar */}
+        {uploadState === 'uploading' && (
+          <div className="upload-progress-container">
+            <div className="upload-progress-info">
+              <span className="upload-progress-filename">📹 {fileName}</span>
+              <span className="upload-progress-size">({formatFileSize(fileSize)})</span>
+            </div>
+            <div className="upload-progress-bar-wrapper">
+              <div
+                className="upload-progress-bar-fill"
+                style={{ width: `${uploadProgress}%` }}
+              />
+            </div>
+            <div className="upload-progress-details">
+              <span className="upload-progress-percent">{uploadProgress}%</span>
+              {timeRemaining && (
+                <span className="upload-progress-time">{timeRemaining}</span>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Upload Complete Banner */}
+        {uploadState === 'complete' && !videoId && (
+          <div className="upload-complete-banner">
+            ✅ Upload abgeschlossen - wird verarbeitet...
+          </div>
+        )}
 
         <div className="chat-messages">
           {/* Initial typing effect */}

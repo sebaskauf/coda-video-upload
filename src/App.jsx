@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import ChatWindow from './components/ChatWindow'
 import { uploadHybrid } from './utils/uploadHybrid'
@@ -41,12 +41,12 @@ function App() {
   const [isDragging, setIsDragging] = useState(false)
   const [files, setFiles] = useState([])
   const [uploadProgress, setUploadProgress] = useState({})
-  const [uploadStatus, setUploadStatus] = useState('')
+  const [uploadStatus, setUploadStatus] = useState('') // 'idle' | 'uploading' | 'complete' | 'error'
   const [isUploading, setIsUploading] = useState(false)
-  const [currentView, setCurrentView] = useState('upload') // 'upload', 'loading', 'success', 'chat'
+  const [currentView, setCurrentView] = useState('upload') // 'upload', 'chat'
   const [videoId, setVideoId] = useState(null)
+  const [videoUrl, setVideoUrl] = useState(null)
   const [notionPageId, setNotionPageId] = useState(null)
-  const [currentStep, setCurrentStep] = useState(0) // 0: upload, 1: AI, 2: database, 3: preparing, 4: complete
   const [showChatOnUpload, setShowChatOnUpload] = useState(false)
   const [newFileIndex, setNewFileIndex] = useState(null)
   const [typewriterText, setTypewriterText] = useState('')
@@ -54,6 +54,14 @@ function App() {
   const [messageIndex, setMessageIndex] = useState(0)
   const [charIndex, setCharIndex] = useState(0)
   const [mouthOpen, setMouthOpen] = useState(false)
+
+  // Parallel Upload State
+  const [uploadState, setUploadState] = useState('idle') // 'idle' | 'uploading' | 'complete' | 'error'
+  const [uploadProgressPercent, setUploadProgressPercent] = useState(0)
+  const [estimatedTimeRemaining, setEstimatedTimeRemaining] = useState(null)
+  const [currentFileName, setCurrentFileName] = useState('')
+  const [currentFileSize, setCurrentFileSize] = useState(0)
+  const uploadStartTimeRef = useRef(null)
 
   // Typewriter messages - title and subtitle pairs
   const typewriterMessages = [
@@ -144,12 +152,9 @@ function App() {
     }
 
     if (validFiles.length > 0) {
-      const currentLength = files.length
-      setNewFileIndex(currentLength)
-      setTimeout(() => setNewFileIndex(null), 1200)
+      // Start background upload and open chat immediately
+      startBackgroundUpload(validFiles[0])
     }
-
-    setFiles(prev => [...prev, ...validFiles])
   }
 
   const handleFileSelect = (e) => {
@@ -161,12 +166,69 @@ function App() {
     }
 
     if (validFiles.length > 0) {
-      const currentLength = files.length
-      setNewFileIndex(currentLength)
-      setTimeout(() => setNewFileIndex(null), 1200)
+      // Start background upload and open chat immediately
+      startBackgroundUpload(validFiles[0])
     }
+  }
 
-    setFiles(prev => [...prev, ...validFiles])
+  // Helper to format time remaining
+  const formatTimeRemaining = (seconds) => {
+    if (seconds === null || seconds <= 0) return ''
+    const mins = Math.floor(seconds / 60)
+    const secs = Math.floor(seconds % 60)
+    if (mins > 0) {
+      return `${mins}:${secs.toString().padStart(2, '0')} verbleibend`
+    }
+    return `${secs}s verbleibend`
+  }
+
+  // Start upload in background and open chat immediately
+  const startBackgroundUpload = async (file) => {
+    // Set upload state
+    setUploadState('uploading')
+    setUploadProgressPercent(0)
+    uploadStartTimeRef.current = Date.now()
+    setCurrentFileName(file.name)
+    setCurrentFileSize(file.size)
+    setFiles([file])
+
+    // Open chat immediately
+    setCurrentView('chat')
+
+    try {
+      const data = await uploadHybrid(
+        file,
+        N8N_WEBHOOK_URL,
+        (progress) => {
+          setUploadProgressPercent(progress)
+
+          // Calculate estimated time remaining
+          const elapsed = (Date.now() - uploadStartTimeRef.current) / 1000
+          if (progress > 5 && elapsed > 0) {
+            const totalEstimated = (elapsed / progress) * 100
+            const remaining = totalEstimated - elapsed
+            setEstimatedTimeRemaining(remaining)
+          }
+        }
+      )
+
+      // Upload complete!
+      setUploadState('complete')
+      setUploadProgressPercent(100)
+      setEstimatedTimeRemaining(null)
+
+      if (data.video_id) {
+        setVideoId(data.video_id)
+      }
+      if (data.video_url) {
+        setVideoUrl(data.video_url)
+      }
+
+    } catch (error) {
+      console.error('Upload error:', error)
+      setUploadState('error')
+      setUploadStatus('Upload fehlgeschlagen: ' + error.message)
+    }
   }
 
   const formatFileSize = (bytes) => {
@@ -181,80 +243,6 @@ function App() {
     setFiles(prev => prev.filter((_, i) => i !== index))
   }
 
-  const uploadFiles = async () => {
-    if (files.length === 0) {
-      setUploadStatus('Bitte wähle zuerst Videos aus')
-      return
-    }
-
-    if (N8N_WEBHOOK_URL === 'YOUR_N8N_WEBHOOK_URL_HERE') {
-      setUploadStatus('Bitte konfiguriere zuerst die n8n Webhook URL in src/App.jsx')
-      return
-    }
-
-    // Switch to loading view
-    setCurrentView('loading')
-    setIsUploading(true)
-    setCurrentStep(0)
-    setUploadStatus('Upload läuft...')
-
-    let lastVideoId = null
-    let lastNotionPageId = null
-
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i]
-
-      try {
-        // Hybrid upload: chunks to R2, then to Postiz
-        const data = await uploadHybrid(
-          file,
-          N8N_WEBHOOK_URL,
-          (progress) => {
-            console.log(`[${file.name}] Progress: ${progress}%`)
-          }
-        )
-
-        // Store video_id and notion_page_id from response
-        if (data.video_id) {
-          lastVideoId = data.video_id
-        }
-        if (data.notion_page_id) {
-          lastNotionPageId = data.notion_page_id
-        }
-
-        setUploadProgress(prev => ({
-          ...prev,
-          [file.name]: 'Erfolgreich'
-        }))
-      } catch (error) {
-        console.error('Upload error:', error)
-        setUploadProgress(prev => ({
-          ...prev,
-          [file.name]: 'Fehler'
-        }))
-      }
-    }
-
-    // Upload complete!
-    setCurrentStep(1)
-
-    setIsUploading(false)
-    setUploadStatus('Upload abgeschlossen!')
-
-    // Store the IDs for chat
-    if (lastVideoId) {
-      setVideoId(lastVideoId)
-    }
-    if (lastNotionPageId) {
-      setNotionPageId(lastNotionPageId)
-    }
-
-    // Short delay to show success animation
-    await new Promise(resolve => setTimeout(resolve, 800))
-
-    // Switch to chat view after upload completes
-    setCurrentView('chat')
-  }
 
   const clearAll = () => {
     setFiles([])
@@ -269,7 +257,13 @@ function App() {
     setUploadStatus('')
     setIsUploading(false)
     setVideoId(null)
+    setVideoUrl(null)
     setNotionPageId(null)
+    setUploadState('idle')
+    setUploadProgressPercent(0)
+    setEstimatedTimeRemaining(null)
+    setCurrentFileName('')
+    setCurrentFileSize(0)
   }
 
   const handleCloseChat = () => {
@@ -277,78 +271,19 @@ function App() {
     resetUpload()
   }
 
-  // Loading View Component - Advanced and cool
-  const LoadingView = () => {
-    return (
-      <div className="loading-view">
-        <div className="loading-background-effects">
-          <div className="loading-particle particle-1"></div>
-          <div className="loading-particle particle-2"></div>
-          <div className="loading-particle particle-3"></div>
-          <div className="loading-particle particle-4"></div>
-          <div className="loading-glow"></div>
-        </div>
-
-        {currentStep === 0 ? (
-          <>
-            <div className="loading-orb-container">
-              <div className="loading-orb">
-                <div className="loading-orb-ring ring-1"></div>
-                <div className="loading-orb-ring ring-2"></div>
-                <div className="loading-orb-ring ring-3"></div>
-                <div className="loading-orb-core">
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                    <polyline points="17,8 12,3 7,8" />
-                    <line x1="12" y1="3" x2="12" y2="15" />
-                  </svg>
-                </div>
-              </div>
-              <div className="loading-progress-ring">
-                <svg viewBox="0 0 100 100">
-                  <circle className="progress-bg" cx="50" cy="50" r="45" />
-                  <circle className="progress-bar" cx="50" cy="50" r="45" />
-                </svg>
-              </div>
-            </div>
-
-            <div className="loading-status">
-              <h2 className="loading-title">Wird verarbeitet</h2>
-              <div className="loading-dots">
-                <span></span><span></span><span></span>
-              </div>
-            </div>
-
-            <p className="loading-file-info">
-              {files.length} {files.length === 1 ? 'Video' : 'Videos'}
-            </p>
-          </>
-        ) : (
-          <>
-            <div className="loading-success-burst">
-              <div className="burst-ring ring-1"></div>
-              <div className="burst-ring ring-2"></div>
-              <div className="burst-ring ring-3"></div>
-              <div className="success-orb">
-                <svg className="success-check" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                  <polyline points="20,6 9,17 4,12" />
-                </svg>
-              </div>
-            </div>
-            <h2 className="loading-title success">Fertig!</h2>
-          </>
-        )}
-      </div>
-    )
-  }
 
   return (
     <div className="app">
-      {currentView === 'chat' && videoId && (
+      {currentView === 'chat' && (
         <ChatWindow
           videoId={videoId}
           notionPageId={notionPageId}
           onClose={handleCloseChat}
+          uploadState={uploadState}
+          uploadProgress={uploadProgressPercent}
+          fileName={currentFileName}
+          fileSize={currentFileSize}
+          timeRemaining={formatTimeRemaining(estimatedTimeRemaining)}
         />
       )}
       {showChatOnUpload && (
@@ -392,7 +327,6 @@ function App() {
       )}
 
       <div className="container">
-        {currentView === 'loading' && <LoadingView />}
         {currentView === 'upload' && (
         <>
         <div className="header">
