@@ -7,8 +7,7 @@ const MAX_RETRIES = 3;
 const RETRY_DELAY = 2000;
 const UPLOAD_TIMEOUT = 30 * 60 * 1000; // 30 minutes for large files
 
-// TODO: Replace with your actual Worker URL after deployment
-const R2_WORKER_URL = 'https://coda-video-upload.YOUR_SUBDOMAIN.workers.dev/upload';
+const R2_WORKER_URL = 'https://coda-video-upload.sebaskauf-business.workers.dev/upload';
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
