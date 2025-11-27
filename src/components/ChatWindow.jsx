@@ -106,9 +106,12 @@ function ChatWindow({
   uploadProgress = 0,
   fileName = '',
   fileSize = 0,
-  timeRemaining = ''
+  timeRemaining = '',
+  chatMessages = [],
+  setChatMessages = () => {},
+  readyToPost = false,
+  setReadyToPost = () => {}
 }) {
-  const [messages, setMessages] = useState([])
   const [inputValue, setInputValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [streamingText, setStreamingText] = useState('')
@@ -118,8 +121,6 @@ function ChatWindow({
   const [mouthOpen, setMouthOpen] = useState(false)
   const [isListening, setIsListening] = useState(false)
   const [isThinking, setIsThinking] = useState(false)
-  const [readyToPost, setReadyToPost] = useState(false)
-  const [hasTriggeredAutoPost, setHasTriggeredAutoPost] = useState(false)
   const messagesEndRef = useRef(null)
   const textareaRef = useRef(null)
   const streamingIntervalRef = useRef(null)
@@ -163,7 +164,7 @@ function ChatWindow({
         setIsInitialTyping(false)
         setMouthOpen(false)
         // Add the complete message to messages array
-        setMessages([{
+        setChatMessages([{
           role: 'assistant',
           content: initialMessage,
           timestamp: new Date()
@@ -181,74 +182,10 @@ function ChatWindow({
 
   const CHAT_WEBHOOK_URL = 'https://n8n-self-host-n8n.qpo7vu.easypanel.host/webhook/chat'
 
-  // Auto-trigger post when upload completes and agent is ready
-  useEffect(() => {
-    if (
-      uploadState === 'complete' &&
-      videoId &&
-      readyToPost &&
-      !hasTriggeredAutoPost &&
-      !isLoading &&
-      !isStreaming
-    ) {
-      // Prevent double-triggering
-      setHasTriggeredAutoPost(true)
-
-      // Add system message to chat
-      const systemMessage = {
-        role: 'user',
-        content: '[Video-Upload abgeschlossen - bitte jetzt posten]',
-        timestamp: new Date(),
-        isSystem: true
-      }
-      setMessages(prev => [...prev, systemMessage])
-
-      // Send auto-trigger to agent
-      sendAutoPostTrigger()
-    }
-  }, [uploadState, videoId, readyToPost, hasTriggeredAutoPost, isLoading, isStreaming])
-
-  // Send automatic post trigger to agent
-  const sendAutoPostTrigger = async () => {
-    setIsThinking(true)
-    setIsLoading(true)
-
-    try {
-      const conversationHistory = buildConversationHistory()
-
-      const response = await fetch(CHAT_WEBHOOK_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: '[SYSTEM] Video-Upload abgeschlossen. video_id ist jetzt verfügbar. Bitte führe den Post jetzt aus wie besprochen.',
-          video_id: videoId,
-          notion_page_id: notionPageId,
-          conversation_history: conversationHistory,
-          upload_in_progress: false,
-          auto_post_trigger: true
-        })
-      })
-
-      const data = await response.json()
-      setIsLoading(false)
-
-      if (data.success && data.response) {
-        streamText(data.response)
-      }
-    } catch (error) {
-      console.error('Auto-post trigger error:', error)
-      setIsLoading(false)
-      setIsThinking(false)
-      streamText('Entschuldigung, beim automatischen Posten ist etwas schief gelaufen.')
-    }
-  }
-
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, streamingText])
+  }, [chatMessages, streamingText])
 
   // Auto-resize textarea and set listening state
   useEffect(() => {
@@ -291,7 +228,7 @@ function ChatWindow({
         content: streamingText + ' [abgebrochen]',
         timestamp: new Date()
       }
-      setMessages(prev => [...prev, partialMessage])
+      setChatMessages(prev => [...prev, partialMessage])
     }
 
     // Reset states
@@ -333,14 +270,14 @@ function ChatWindow({
           content: text,
           timestamp: new Date()
         }
-        setMessages(prev => [...prev, assistantMessage])
+        setChatMessages(prev => [...prev, assistantMessage])
         setStreamingText('')
       }
     }, speed)
   }
 
   const buildConversationHistory = () => {
-    return messages.map(msg => ({
+    return chatMessages.map(msg => ({
       role: msg.role,
       content: msg.content
     }))
@@ -419,7 +356,7 @@ function ChatWindow({
       content: userMessage,
       timestamp: new Date()
     }
-    setMessages(prev => [...prev, newUserMessage])
+    setChatMessages(prev => [...prev, newUserMessage])
 
     // Always send immediately - the agent can chat without video_id
     // video_id will be available when needed for final posting
@@ -498,7 +435,7 @@ function ChatWindow({
             </div>
           )}
 
-          {messages.map((message, index) => (
+          {chatMessages.map((message, index) => (
             <div
               key={index}
               className={`chat-message ${message.role} ${message.isError ? 'error' : ''}`}

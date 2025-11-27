@@ -63,6 +63,79 @@ function App() {
   const [currentFileSize, setCurrentFileSize] = useState(0)
   const uploadStartTimeRef = useRef(null)
 
+  // Chat State (persists when chat is closed)
+  const [chatMessages, setChatMessages] = useState([])
+  const [readyToPost, setReadyToPost] = useState(false)
+  const [hasTriggeredAutoPost, setHasTriggeredAutoPost] = useState(false)
+
+  // Chat Webhook URL
+  const CHAT_WEBHOOK_URL = 'https://n8n-self-host-n8n.qpo7vu.easypanel.host/webhook/chat'
+
+  // Auto-trigger post when upload completes - works even if chat is closed!
+  useEffect(() => {
+    if (
+      uploadState === 'complete' &&
+      videoId &&
+      readyToPost &&
+      !hasTriggeredAutoPost
+    ) {
+      console.log('[App] Auto-triggering post - upload complete and ready!')
+      setHasTriggeredAutoPost(true)
+      sendAutoPostTrigger()
+    }
+  }, [uploadState, videoId, readyToPost, hasTriggeredAutoPost])
+
+  // Send automatic post trigger to agent (runs from App level)
+  const sendAutoPostTrigger = async () => {
+    try {
+      // Build conversation history from saved messages
+      const conversationHistory = chatMessages.map(msg => ({
+        role: msg.role,
+        content: msg.content
+      }))
+
+      console.log('[App] Sending auto-post trigger to agent with video_id:', videoId)
+
+      const response = await fetch(CHAT_WEBHOOK_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: '[SYSTEM] Video-Upload abgeschlossen. video_id ist jetzt verfügbar. Bitte führe den Post jetzt aus wie besprochen.',
+          video_id: videoId,
+          notion_page_id: notionPageId,
+          conversation_history: conversationHistory,
+          upload_in_progress: false,
+          auto_post_trigger: true
+        })
+      })
+
+      const data = await response.json()
+      console.log('[App] Auto-post trigger response:', data)
+
+      if (data.success && data.response) {
+        // Add the response to chat messages
+        setChatMessages(prev => [
+          ...prev,
+          {
+            role: 'user',
+            content: '[Video-Upload abgeschlossen - automatisch gepostet]',
+            timestamp: new Date(),
+            isSystem: true
+          },
+          {
+            role: 'assistant',
+            content: data.response,
+            timestamp: new Date()
+          }
+        ])
+      }
+    } catch (error) {
+      console.error('[App] Auto-post trigger error:', error)
+    }
+  }
+
   // Typewriter messages - title and subtitle pairs
   const typewriterMessages = [
     { title: 'Videos hochladen', subtitle: 'Am besten als MP4' },
@@ -267,13 +340,52 @@ function App() {
   }
 
   const handleCloseChat = () => {
-    // When closing chat, go back to upload view
+    // Just close chat view - don't reset upload!
+    // Upload continues in background
+    setCurrentView('upload')
+  }
+
+  // Full reset - only when starting completely new
+  const handleFullReset = () => {
     resetUpload()
+    setChatMessages([])
+    setReadyToPost(false)
+    setHasTriggeredAutoPost(false)
   }
 
 
   return (
     <div className="app">
+      {/* Upload Status Box - shows when chat is closed but upload is running */}
+      {currentView !== 'chat' && uploadState === 'uploading' && (
+        <div className="upload-status-box" onClick={() => setCurrentView('chat')}>
+          <div className="upload-status-box-icon">📹</div>
+          <div className="upload-status-box-content">
+            <div className="upload-status-box-filename">{currentFileName}</div>
+            <div className="upload-status-box-progress">
+              <div
+                className="upload-status-box-progress-fill"
+                style={{ width: `${uploadProgressPercent}%` }}
+              />
+            </div>
+            <div className="upload-status-box-text">
+              {uploadProgressPercent}% {formatTimeRemaining(estimatedTimeRemaining) && `• ${formatTimeRemaining(estimatedTimeRemaining)}`}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Upload Complete Box - shows when upload is done but chat is closed */}
+      {currentView !== 'chat' && uploadState === 'complete' && (
+        <div className="upload-status-box complete" onClick={() => setCurrentView('chat')}>
+          <div className="upload-status-box-icon">✅</div>
+          <div className="upload-status-box-content">
+            <div className="upload-status-box-filename">{currentFileName}</div>
+            <div className="upload-status-box-text">Upload abgeschlossen! Klicke um Chat zu öffnen</div>
+          </div>
+        </div>
+      )}
+
       {currentView === 'chat' && (
         <ChatWindow
           videoId={videoId}
@@ -284,6 +396,10 @@ function App() {
           fileName={currentFileName}
           fileSize={currentFileSize}
           timeRemaining={formatTimeRemaining(estimatedTimeRemaining)}
+          chatMessages={chatMessages}
+          setChatMessages={setChatMessages}
+          readyToPost={readyToPost}
+          setReadyToPost={setReadyToPost}
         />
       )}
       {showChatOnUpload && (
