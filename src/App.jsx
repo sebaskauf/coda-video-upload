@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 import ChatWindow from './components/ChatWindow'
+import { uploadFile } from './utils/uploadChunked'
 
 // Mascot Component - Defined outside App to prevent re-renders
 const Mascot = ({ mouthOpen }) => (
@@ -203,55 +204,28 @@ function App() {
     for (let i = 0; i < files.length; i++) {
       const file = files[i]
 
-      // Verify file is valid before upload
-      if (!file || !(file instanceof File)) {
-        console.error('Invalid file object:', file)
+      try {
+        // Use robust upload function with retry logic and progress tracking
+        const data = await uploadFile(
+          file,
+          N8N_WEBHOOK_URL,
+          (progress) => {
+            console.log(`[${file.name}] Progress: ${progress}%`)
+          }
+        )
+
+        // Store video_id and notion_page_id from response
+        if (data.video_id) {
+          lastVideoId = data.video_id
+        }
+        if (data.notion_page_id) {
+          lastNotionPageId = data.notion_page_id
+        }
+
         setUploadProgress(prev => ({
           ...prev,
-          [file?.name || 'unknown']: 'Fehler'
+          [file.name]: 'Erfolgreich'
         }))
-        continue
-      }
-
-      console.log('Uploading file:', file.name, 'Size:', file.size, 'Type:', file.type)
-
-      const formData = new FormData()
-      // Append file with explicit filename and type
-      formData.append('file', file, file.name)
-      formData.append('fileName', file.name)
-      formData.append('fileSize', String(file.size))
-      formData.append('mimeType', file.type || 'video/mp4')
-      formData.append('fileType', 'video')
-
-      try {
-        // Upload to n8n webhook - wait for real backend response
-        const response = await fetch(N8N_WEBHOOK_URL, {
-          method: 'POST',
-          body: formData,
-          // Don't set Content-Type - browser sets it automatically with boundary
-        })
-
-        if (response.ok) {
-          const data = await response.json()
-
-          // Store video_id and notion_page_id from response
-          if (data.video_id) {
-            lastVideoId = data.video_id
-          }
-          if (data.notion_page_id) {
-            lastNotionPageId = data.notion_page_id
-          }
-
-          setUploadProgress(prev => ({
-            ...prev,
-            [file.name]: 'Erfolgreich'
-          }))
-        } else {
-          setUploadProgress(prev => ({
-            ...prev,
-            [file.name]: 'Fehler'
-          }))
-        }
       } catch (error) {
         console.error('Upload error:', error)
         setUploadProgress(prev => ({
