@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 import ChatWindow from './components/ChatWindow'
-import { uploadViaR2 } from './utils/uploadToR2'
+import { uploadToPostiz } from './utils/uploadToPostiz'
 
 // Mascot Component - Defined outside App to prevent re-renders
 const Mascot = ({ mouthOpen }) => (
@@ -205,8 +205,8 @@ function App() {
       const file = files[i]
 
       try {
-        // Use R2 upload: uploads to Cloudflare R2, then notifies n8n with URL
-        const data = await uploadViaR2(
+        // Direct upload to Postiz via Cloudflare Worker
+        const data = await uploadToPostiz(
           file,
           N8N_WEBHOOK_URL,
           (progress) => {

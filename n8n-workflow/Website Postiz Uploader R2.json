@@ -129,7 +129,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Get data from Postiz upload\nconst postizData = $('Upload to Postiz').item.json;\nconst webhookData = $('Process Webhook Data').item.json;\n\nreturn [{\n  json: {\n    customer: webhookData.customer,\n    user_id: webhookData.user_id,\n    user_name: webhookData.user_name,\n    \n    video_id: postizData.id,\n    video_url: postizData.path,\n    video_filename: postizData.name,\n    video_size_mb: webhookData.size_mb,\n    \n    // R2 URL for reference\n    r2_url: webhookData.video_url || null,\n    \n    thumbnail_id: null,\n    thumbnail_url: null,\n    has_thumbnail: false,\n    \n    status: '⏱️ Waiting Instructions',\n    upload_timestamp: webhookData.upload_timestamp\n  }\n}];"
+        "jsCode": "// Get data from Postiz upload\nconst postizData = $('Upload to Postiz').item.json;\nconst webhookData = $('Process Webhook Data').item.json;\n\n// WICHTIG: Speichere R2 URL statt Postiz URL!\n// R2 liefert korrektes MP4, Postiz manchmal QuickTime\nconst videoUrlForDownload = webhookData.video_url; // R2 URL\nconst postizVideoUrl = postizData.path; // Postiz URL (nur für Posting)\n\nreturn [{\n  json: {\n    customer: webhookData.customer,\n    user_id: webhookData.user_id,\n    user_name: webhookData.user_name,\n    \n    // Postiz IDs für das Posting\n    video_id: postizData.id,\n    postiz_video_url: postizVideoUrl,\n    \n    // R2 URL für Video-Analyse (korrektes MP4!)\n    video_url: videoUrlForDownload,\n    \n    video_filename: postizData.name,\n    video_size_mb: webhookData.size_mb,\n    \n    thumbnail_id: null,\n    thumbnail_url: null,\n    has_thumbnail: false,\n    \n    status: '⏱️ Waiting Instructions',\n    upload_timestamp: webhookData.upload_timestamp\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -165,6 +165,10 @@
             {
               "key": "Video URL|url",
               "urlValue": "={{ $json.video_url }}"
+            },
+            {
+              "key": "Postiz Video URL|url",
+              "urlValue": "={{ $json.postiz_video_url }}"
             },
             {
               "key": "Timestamp|date",
