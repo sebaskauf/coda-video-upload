@@ -1,0 +1,318 @@
+{
+  "name": "Website Postiz Uploader (R2)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Upload per webhook (R2 Version)\n\nDiese Version empfängt eine R2-URL statt einer Binary-Datei.\nDas Video wird von R2 heruntergeladen und dann zu Postiz hochgeladen.",
+        "height": 720,
+        "width": 2400,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [-640, -432],
+      "typeVersion": 1,
+      "id": "f24a547c-35b9-4030-a24f-09dfe43e457b",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "video-upload",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [-592, -192],
+      "id": "5995784f-5e10-43ab-b170-c2402aacb351",
+      "name": "Datei Webhook",
+      "webhookId": "57b697d2-191a-4850-851f-21d7acfb6d03"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get webhook data - now receives URL instead of binary\nconst items = $input.all();\nconst firstItem = items[0];\nconst body = firstItem.json?.body || firstItem.json || {};\n\nconsole.log(\"=== WEBHOOK RECEIVED (R2 Version) ===\");\nconsole.log(\"Body:\", JSON.stringify(body, null, 2));\n\n// Check if this is R2 upload (URL) or legacy (binary)\nconst isR2Upload = body.uploadMethod === 'r2' || body.videoUrl;\n\nif (isR2Upload) {\n  // R2 Upload - we receive a URL\n  console.log(\"R2 Upload detected\");\n  \n  return [{\n    json: {\n      is_r2_upload: true,\n      video_url: body.videoUrl,\n      r2_filename: body.r2Filename,\n      filename: body.fileName,\n      mimetype: body.mimeType || 'video/mp4',\n      filesize: parseInt(body.fileSize || 0),\n      size_mb: Math.round(parseInt(body.fileSize || 0) / 1024 / 1024),\n      \n      // Customer info\n      customer: body.customer || 'Unknown',\n      user_id: body.user_id || '8455857646',\n      user_name: body.user_name || 'Cornelius',\n      \n      upload_timestamp: body.timestamp || new Date().toISOString()\n    }\n  }];\n} else {\n  // Legacy binary upload\n  console.log(\"Legacy binary upload detected\");\n  const fileData = firstItem.binary?.file;\n  \n  return [{\n    binary: { file: fileData },\n    json: {\n      is_r2_upload: false,\n      filename: body.fileName || fileData?.fileName || 'file',\n      mimetype: body.mimeType || fileData?.mimeType || 'video/mp4',\n      filesize: parseInt(body.fileSize || fileData?.fileSize || 0),\n      size_mb: Math.round(parseInt(body.fileSize || 0) / 1024 / 1024),\n      customer: body.customer || 'Unknown',\n      user_id: body.user_id || '8455857646',\n      user_name: body.user_name || 'Cornelius',\n      upload_timestamp: new Date().toISOString()\n    }\n  }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-368, -192],
+      "id": "ea844d64-4970-4c8b-8603-c99f23310560",
+      "name": "Process Webhook Data"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "r2-check",
+              "leftValue": "={{ $json.is_r2_upload }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [-128, -192],
+      "id": "if-r2-check",
+      "name": "Is R2 Upload?"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.video_url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          },
+          "timeout": 300000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [112, -288],
+      "id": "download-from-r2",
+      "name": "Download from R2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Merge downloaded file with metadata\nconst webhookData = $('Process Webhook Data').item.json;\nconst downloadedFile = $input.item.binary?.data;\n\nreturn [{\n  binary: {\n    file: downloadedFile\n  },\n  json: webhookData\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [320, -288],
+      "id": "merge-data",
+      "name": "Merge Data"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.postiz.com/public/v1/upload",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "=file"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e017cb49-a41c-4491-b4ad-562ae6296965",
+      "name": "Upload to Postiz",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [528, -192],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "IlnoG3ZNZloT8Ax2",
+          "name": "Postiz API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get data from Postiz upload\nconst postizData = $('Upload to Postiz').item.json;\nconst webhookData = $('Process Webhook Data').item.json;\n\nreturn [{\n  json: {\n    customer: webhookData.customer,\n    user_id: webhookData.user_id,\n    user_name: webhookData.user_name,\n    \n    video_id: postizData.id,\n    video_url: postizData.path,\n    video_filename: postizData.name,\n    video_size_mb: webhookData.size_mb,\n    \n    // R2 URL for reference\n    r2_url: webhookData.video_url || null,\n    \n    thumbnail_id: null,\n    thumbnail_url: null,\n    has_thumbnail: false,\n    \n    status: '⏱️ Waiting Instructions',\n    upload_timestamp: webhookData.upload_timestamp\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [752, -192],
+      "id": "99c6a358-30ac-48d9-8c8a-4e1ac5ef16bc",
+      "name": "Prepare Notion Data"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "2b2885ad-4362-80d6-a47d-cf674e555709",
+          "mode": "list",
+          "cachedResultName": "Video Upload Queue",
+          "cachedResultUrl": "https://www.notion.so/2b2885ad436280d6a47dcf674e555709"
+        },
+        "title": "={{ \"Upload \" + $now.format('DD.MM.YYYY HH:mm') }}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "User ID|rich_text",
+              "textContent": "={{ $json.user_id }}"
+            },
+            {
+              "key": "Name|title",
+              "title": "={{ $json.user_name }}"
+            },
+            {
+              "key": "Video ID|rich_text",
+              "textContent": "={{ $json.video_id }}"
+            },
+            {
+              "key": "Video URL|url",
+              "urlValue": "={{ $json.video_url }}"
+            },
+            {
+              "key": "Timestamp|date",
+              "date": "={{ $now }}",
+              "timezone": "Europe/Berlin"
+            },
+            {
+              "key": "Status|select",
+              "selectValue": "⏱️ Waiting Instructions"
+            },
+            {
+              "key": "Customer|rich_text",
+              "textContent": "=={{ $json.customer }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [976, -192],
+      "id": "9ef9a940-d3b9-4248-82c8-523c9ed64dc5",
+      "name": "Save to Upload Queue",
+      "credentials": {
+        "notionApi": {
+          "id": "QU9GWfUUQ0xFdkkx",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"response\": \"✅ Video erfolgreich hochgeladen!\\n\\nWas soll ich damit machen?\\n\\n💡 Sag mir:\\n• Für welchen Kunden\\n• Auf welche Plattform(en)\\n• Wann (jetzt oder später)\",\n  \"video_id\": \"{{ $json.property_video_id }}\",\n  \"notion_page_id\": \"{{ $json.id }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [1200, -192],
+      "id": "27b758cb-76af-4ed4-aa05-fb02a1d32d13",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "connections": {
+    "Datei Webhook": {
+      "main": [
+        [
+          {
+            "node": "Process Webhook Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Webhook Data": {
+      "main": [
+        [
+          {
+            "node": "Is R2 Upload?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is R2 Upload?": {
+      "main": [
+        [
+          {
+            "node": "Download from R2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Upload to Postiz",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download from R2": {
+      "main": [
+        [
+          {
+            "node": "Merge Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Data": {
+      "main": [
+        [
+          {
+            "node": "Upload to Postiz",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload to Postiz": {
+      "main": [
+        [
+          {
+            "node": "Prepare Notion Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Notion Data": {
+      "main": [
+        [
+          {
+            "node": "Save to Upload Queue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save to Upload Queue": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Berlin",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": []
+}
