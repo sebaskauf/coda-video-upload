@@ -40,15 +40,12 @@ const Mascot = ({ mouthOpen }) => (
 function App() {
   const [isDragging, setIsDragging] = useState(false)
   const [files, setFiles] = useState([])
-  const [uploadProgress, setUploadProgress] = useState({})
-  const [uploadStatus, setUploadStatus] = useState('') // 'idle' | 'uploading' | 'complete' | 'error'
-  const [isUploading, setIsUploading] = useState(false)
+  const [uploadStatus, setUploadStatus] = useState('') // For error messages
   const [currentView, setCurrentView] = useState('upload') // 'upload', 'chat'
   const [videoId, setVideoId] = useState(null)
   const [videoUrl, setVideoUrl] = useState(null)
   const [notionPageId, setNotionPageId] = useState(null)
   const [showChatOnUpload, setShowChatOnUpload] = useState(false)
-  const [newFileIndex, setNewFileIndex] = useState(null)
   const [typewriterText, setTypewriterText] = useState('')
   const [isDeleting, setIsDeleting] = useState(false)
   const [messageIndex, setMessageIndex] = useState(0)
@@ -312,23 +309,10 @@ function App() {
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
   }
 
-  const removeFile = (index) => {
-    setFiles(prev => prev.filter((_, i) => i !== index))
-  }
-
-
-  const clearAll = () => {
-    setFiles([])
-    setUploadProgress({})
-    setUploadStatus('')
-  }
-
   const resetUpload = () => {
     setCurrentView('upload')
     setFiles([])
-    setUploadProgress({})
     setUploadStatus('')
-    setIsUploading(false)
     setVideoId(null)
     setVideoUrl(null)
     setNotionPageId(null)
@@ -494,52 +478,6 @@ function App() {
             </p>
           </div>
         </div>
-
-        {files.length > 0 && (
-          <div className="files-list">
-            <div className="files-header">
-              <h3>Ausgewählte Videos ({files.length})</h3>
-              <button className="clear-btn" onClick={clearAll} disabled={isUploading}>
-                Alle entfernen
-              </button>
-            </div>
-            {files.map((file, index) => (
-              <div key={index} className={`file-item ${index === newFileIndex ? 'file-item-new' : ''}`}>
-                {index === newFileIndex && (
-                  <div className="file-item-check-overlay">
-                    <svg className="file-item-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20,6 9,17 4,12" />
-                    </svg>
-                  </div>
-                )}
-                <div className="file-info">
-                  <span className="file-name">{file.name}</span>
-                  <span className="file-size">{formatFileSize(file.size)}</span>
-                </div>
-                <div className="file-actions">
-                  {uploadProgress[file.name] && (
-                    <span className={`status ${uploadProgress[file.name].toLowerCase()}`}>
-                      {uploadProgress[file.name]}
-                    </span>
-                  )}
-                  <button
-                    className="remove-btn"
-                    onClick={() => removeFile(index)}
-                    disabled={isUploading}
-                  >
-                    ✕
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {files.length > 0 && (
-          <button className="upload-btn" onClick={uploadFiles} disabled={isUploading}>
-            {isUploading ? 'Upload läuft...' : `${files.length} ${files.length === 1 ? 'Video' : 'Videos'} hochladen`}
-          </button>
-        )}
 
         {uploadStatus && (
           <div className={`status-message ${uploadStatus.includes('Fehler') || uploadStatus.includes('konfiguriere') ? 'error' : 'success'}`}>
