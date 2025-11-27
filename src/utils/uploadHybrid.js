@@ -5,7 +5,7 @@
 
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 2000;
-const CHUNK_SIZE = 50 * 1024 * 1024; // 50MB chunks
+const CHUNK_SIZE = 95 * 1024 * 1024; // 95MB chunks (max for Cloudflare Worker)
 const PARALLEL_UPLOADS = 6; // Upload up to 6 chunks simultaneously (browser limit)
 const UPLOAD_TIMEOUT = 10 * 60 * 1000; // 10 minutes per chunk
 
