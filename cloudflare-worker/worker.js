@@ -48,26 +48,11 @@ async function handleUpload(request, env) {
   try {
     const contentType = request.headers.get('Content-Type') || '';
 
-    let file;
-    let filename;
-    let filetype;
+    // Get filename and filetype from headers (sent by frontend)
+    const filename = request.headers.get('X-Filename') || 'video.mp4';
+    const filetype = request.headers.get('X-Filetype') || 'video/mp4';
 
-    if (contentType.includes('multipart/form-data')) {
-      // Handle FormData upload
-      const formData = await request.formData();
-      file = formData.get('file');
-      filename = formData.get('fileName') || file?.name || 'video.mp4';
-      filetype = formData.get('mimeType') || file?.type || 'video/mp4';
-    } else {
-      // Handle raw binary upload
-      file = await request.arrayBuffer();
-      filename = request.headers.get('X-Filename') || 'video.mp4';
-      filetype = request.headers.get('X-Filetype') || 'video/mp4';
-    }
-
-    if (!file) {
-      return jsonResponse({ error: 'No file provided' }, 400);
-    }
+    console.log(`[R2 Upload] Receiving file: ${filename}, type: ${filetype}`);
 
     // Generate unique filename
     const timestamp = Date.now();
@@ -75,11 +60,16 @@ async function handleUpload(request, env) {
     const ext = filename.split('.').pop() || 'mp4';
     const uniqueFilename = `videos/${timestamp}-${random}.${ext}`;
 
-    // Get file data as ArrayBuffer
-    const fileData = file instanceof File ? await file.arrayBuffer() : file;
+    // IMPORTANT: Use request.body directly for streaming large files
+    // This avoids the 100MB limit of request.arrayBuffer()
+    if (!request.body) {
+      return jsonResponse({ error: 'No file data in request body' }, 400);
+    }
 
-    // Upload to R2
-    await env.R2_BUCKET.put(uniqueFilename, fileData, {
+    console.log(`[R2 Upload] Streaming to R2: ${uniqueFilename}`);
+
+    // Upload to R2 using streaming (supports files > 100MB!)
+    await env.R2_BUCKET.put(uniqueFilename, request.body, {
       httpMetadata: {
         contentType: filetype,
       },
@@ -99,7 +89,6 @@ async function handleUpload(request, env) {
       url: publicUrl,
       filename: uniqueFilename,
       originalFilename: filename,
-      size: fileData.byteLength,
       mimeType: filetype,
     });
 
