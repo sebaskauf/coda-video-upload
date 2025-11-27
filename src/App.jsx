@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 import ChatWindow from './components/ChatWindow'
-import { uploadToPostiz } from './utils/uploadToPostiz'
+import { uploadHybrid } from './utils/uploadHybrid'
 
 // Mascot Component - Defined outside App to prevent re-renders
 const Mascot = ({ mouthOpen }) => (
@@ -205,8 +205,8 @@ function App() {
       const file = files[i]
 
       try {
-        // Direct upload to Postiz via Cloudflare Worker
-        const data = await uploadToPostiz(
+        // Hybrid upload: chunks to R2, then to Postiz
+        const data = await uploadHybrid(
           file,
           N8N_WEBHOOK_URL,
           (progress) => {
