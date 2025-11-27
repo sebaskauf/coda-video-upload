@@ -1,11 +1,12 @@
 /**
  * Hybrid Upload: Chunks to R2, then Worker uploads to Postiz
- * Supports files of any size!
+ * Supports files of any size with parallel chunk uploads!
  */
 
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 2000;
 const CHUNK_SIZE = 50 * 1024 * 1024; // 50MB chunks
+const PARALLEL_UPLOADS = 6; // Upload up to 6 chunks simultaneously (browser limit)
 const UPLOAD_TIMEOUT = 10 * 60 * 1000; // 10 minutes per chunk
 
 const WORKER_URL = 'https://coda-video-upload.sebaskauf-business.workers.dev';
@@ -115,11 +116,19 @@ const uploadChunked = async (file, n8nWebhookUrl, onProgress) => {
   const { uploadId, key, originalFilename } = startData;
   console.log(`[Hybrid] Upload started: ${uploadId}`);
 
-  // Step 2: Upload each chunk
-  const parts = [];
-  let uploadedBytes = 0;
+  // Step 2: Upload chunks in parallel
+  const parts = new Array(totalChunks);
+  const uploadedBytesPerPart = new Array(totalChunks).fill(0);
 
-  for (let partNumber = 1; partNumber <= totalChunks; partNumber++) {
+  // Helper to update overall progress
+  const updateProgress = () => {
+    const totalUploaded = uploadedBytesPerPart.reduce((a, b) => a + b, 0);
+    const overallProgress = (totalUploaded / file.size) * 80;
+    onProgress(Math.round(overallProgress));
+  };
+
+  // Upload a single part with retries
+  const uploadPart = async (partNumber) => {
     const start = (partNumber - 1) * CHUNK_SIZE;
     const end = Math.min(start + CHUNK_SIZE, file.size);
     const chunk = file.slice(start, end);
@@ -139,9 +148,8 @@ const uploadChunked = async (file, n8nWebhookUrl, onProgress) => {
             'Content-Type': 'application/octet-stream',
           },
           (loaded, total) => {
-            // 0-80% for chunk uploads
-            const overallProgress = ((uploadedBytes + loaded) / file.size) * 80;
-            onProgress(Math.round(overallProgress));
+            uploadedBytesPerPart[partNumber - 1] = loaded;
+            updateProgress();
           }
         );
 
@@ -149,13 +157,13 @@ const uploadChunked = async (file, n8nWebhookUrl, onProgress) => {
           throw new Error(partResponse.error || 'Part upload failed');
         }
 
-        parts.push({
+        uploadedBytesPerPart[partNumber - 1] = chunk.size;
+        updateProgress();
+
+        return {
           partNumber: partResponse.partNumber,
           etag: partResponse.etag,
-        });
-
-        uploadedBytes += chunk.size;
-        break;
+        };
 
       } catch (error) {
         lastError = error;
@@ -165,10 +173,20 @@ const uploadChunked = async (file, n8nWebhookUrl, onProgress) => {
         }
       }
     }
+    throw new Error(`Failed to upload part ${partNumber}: ${lastError?.message}`);
+  };
 
-    if (parts.length < partNumber) {
-      throw new Error(`Failed to upload part ${partNumber}: ${lastError?.message}`);
-    }
+  // Upload parts in parallel batches
+  const partNumbers = Array.from({ length: totalChunks }, (_, i) => i + 1);
+
+  for (let i = 0; i < partNumbers.length; i += PARALLEL_UPLOADS) {
+    const batch = partNumbers.slice(i, i + PARALLEL_UPLOADS);
+    console.log(`[Hybrid] Uploading batch: parts ${batch.join(', ')}`);
+
+    const batchResults = await Promise.all(batch.map(uploadPart));
+    batchResults.forEach((result, idx) => {
+      parts[batch[idx] - 1] = result;
+    });
   }
 
   // Step 3: Complete - Worker will assemble, upload to Postiz, and cleanup

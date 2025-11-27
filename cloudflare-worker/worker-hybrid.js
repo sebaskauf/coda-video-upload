@@ -11,10 +11,10 @@
  *
  * Setup:
  * 1. Add R2 Bucket Binding: R2_BUCKET = coda-videos
- * 2. Add Variable: POSTIZ_API_KEY = your-api-key (encrypted!)
  */
 
 const POSTIZ_UPLOAD_URL = 'https://api.postiz.com/public/v1/upload';
+const POSTIZ_API_KEY = 'd11a5cd4fc367f734e371a00422dd838e252c6b4138183bdfd60d4713f95c6d7';
 
 export default {
   async fetch(request, env, ctx) {
@@ -56,9 +56,9 @@ export default {
     if (url.pathname === '/health') {
       return new Response(JSON.stringify({
         status: 'ok',
-        version: 'hybrid-v1',
+        version: 'hybrid-v3',
         hasR2: !!env.R2_BUCKET,
-        hasApiKey: !!env.POSTIZ_API_KEY
+        hasApiKey: true
       }), {
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
       });
@@ -71,10 +71,6 @@ export default {
 // Simple upload for files < 95MB - direct to Postiz
 async function handleSimpleUpload(request, env, corsHeaders) {
   try {
-    if (!env.POSTIZ_API_KEY) {
-      return jsonResponse({ error: 'POSTIZ_API_KEY not configured' }, 500, corsHeaders);
-    }
-
     const filename = request.headers.get('X-Filename') || 'video.mp4';
     const filetype = request.headers.get('X-Filetype') || 'video/mp4';
     const n8nWebhook = request.headers.get('X-N8N-Webhook') || null;
@@ -91,7 +87,7 @@ async function handleSimpleUpload(request, env, corsHeaders) {
 
     const postizResponse = await fetch(POSTIZ_UPLOAD_URL, {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${env.POSTIZ_API_KEY}` },
+      headers: { 'Authorization': POSTIZ_API_KEY },
       body: formData,
     });
 
@@ -193,10 +189,6 @@ async function handleUploadPart(request, env, corsHeaders) {
 // Complete R2 upload, then upload to Postiz, then cleanup
 async function handleCompleteAndUploadToPostiz(request, env, corsHeaders) {
   try {
-    if (!env.POSTIZ_API_KEY) {
-      return jsonResponse({ error: 'POSTIZ_API_KEY not configured' }, 500, corsHeaders);
-    }
-
     const body = await request.json();
     const { uploadId, key, parts, originalFilename, mimeType, n8nWebhook } = body;
 
@@ -229,7 +221,7 @@ async function handleCompleteAndUploadToPostiz(request, env, corsHeaders) {
 
     const postizResponse = await fetch(POSTIZ_UPLOAD_URL, {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${env.POSTIZ_API_KEY}` },
+      headers: { 'Authorization': POSTIZ_API_KEY },
       body: formData,
     });
 
