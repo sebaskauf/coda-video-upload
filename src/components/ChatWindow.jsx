@@ -118,7 +118,6 @@ function ChatWindow({
   const [mouthOpen, setMouthOpen] = useState(false)
   const [isListening, setIsListening] = useState(false)
   const [isThinking, setIsThinking] = useState(false)
-  const [pendingMessage, setPendingMessage] = useState(null)
   const messagesEndRef = useRef(null)
   const textareaRef = useRef(null)
   const streamingIntervalRef = useRef(null)
@@ -136,11 +135,8 @@ function ChatWindow({
 
   // Initial greeting message based on upload state
   const getInitialMessage = () => {
-    if (uploadState === 'uploading') {
-      return '📹 Video wird hochgeladen... Du kannst mir schon sagen, was ich damit machen soll!'
-    }
-    if (uploadState === 'complete' || videoId) {
-      return '✅ Video hochgeladen! Was soll ich damit machen?'
+    if (uploadState === 'uploading' || uploadState === 'complete' || videoId) {
+      return '📹 Hey! Sag mir, was ich mit dem Video machen soll - für welchen Kunden, auf welche Plattform, und wann?'
     }
     return '👋 Hey! Ich bin Quandale. Frag mich was du willst über unser CRM oder sonstige Themen!'
   }
@@ -183,14 +179,6 @@ function ChatWindow({
 
   const CHAT_WEBHOOK_URL = 'https://n8n-self-host-n8n.qpo7vu.easypanel.host/webhook/chat'
 
-  // Send pending message when upload completes
-  useEffect(() => {
-    if (uploadState === 'complete' && pendingMessage && videoId) {
-      // Upload just completed and we have a pending message - send it now
-      sendMessageToApi(pendingMessage)
-      setPendingMessage(null)
-    }
-  }, [uploadState, videoId])
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -316,9 +304,10 @@ function ChatWindow({
         },
         body: JSON.stringify({
           message: userMessage,
-          video_id: videoId,
-          notion_page_id: notionPageId,
-          conversation_history: conversationHistory
+          video_id: videoId || null,
+          notion_page_id: notionPageId || null,
+          conversation_history: conversationHistory,
+          upload_in_progress: uploadState === 'uploading'
         }),
         signal: abortControllerRef.current.signal
       })
@@ -361,21 +350,8 @@ function ChatWindow({
     }
     setMessages(prev => [...prev, newUserMessage])
 
-    // If upload is still in progress, save as pending message
-    if (uploadState === 'uploading') {
-      setPendingMessage(userMessage)
-      // Add a system message to indicate waiting
-      const waitingMessage = {
-        role: 'assistant',
-        content: '⏳ Warte auf Video-Upload... Ich antworte gleich!',
-        timestamp: new Date(),
-        isWaiting: true
-      }
-      setMessages(prev => [...prev, waitingMessage])
-      return
-    }
-
-    // Upload complete or no upload - send immediately
+    // Always send immediately - the agent can chat without video_id
+    // video_id will be available when needed for final posting
     await sendMessageToApi(userMessage)
   }
 
