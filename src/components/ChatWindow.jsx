@@ -118,6 +118,8 @@ function ChatWindow({
   const [mouthOpen, setMouthOpen] = useState(false)
   const [isListening, setIsListening] = useState(false)
   const [isThinking, setIsThinking] = useState(false)
+  const [readyToPost, setReadyToPost] = useState(false)
+  const [hasTriggeredAutoPost, setHasTriggeredAutoPost] = useState(false)
   const messagesEndRef = useRef(null)
   const textareaRef = useRef(null)
   const streamingIntervalRef = useRef(null)
@@ -179,6 +181,69 @@ function ChatWindow({
 
   const CHAT_WEBHOOK_URL = 'https://n8n-self-host-n8n.qpo7vu.easypanel.host/webhook/chat'
 
+  // Auto-trigger post when upload completes and agent is ready
+  useEffect(() => {
+    if (
+      uploadState === 'complete' &&
+      videoId &&
+      readyToPost &&
+      !hasTriggeredAutoPost &&
+      !isLoading &&
+      !isStreaming
+    ) {
+      // Prevent double-triggering
+      setHasTriggeredAutoPost(true)
+
+      // Add system message to chat
+      const systemMessage = {
+        role: 'user',
+        content: '[Video-Upload abgeschlossen - bitte jetzt posten]',
+        timestamp: new Date(),
+        isSystem: true
+      }
+      setMessages(prev => [...prev, systemMessage])
+
+      // Send auto-trigger to agent
+      sendAutoPostTrigger()
+    }
+  }, [uploadState, videoId, readyToPost, hasTriggeredAutoPost, isLoading, isStreaming])
+
+  // Send automatic post trigger to agent
+  const sendAutoPostTrigger = async () => {
+    setIsThinking(true)
+    setIsLoading(true)
+
+    try {
+      const conversationHistory = buildConversationHistory()
+
+      const response = await fetch(CHAT_WEBHOOK_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: '[SYSTEM] Video-Upload abgeschlossen. video_id ist jetzt verfügbar. Bitte führe den Post jetzt aus wie besprochen.',
+          video_id: videoId,
+          notion_page_id: notionPageId,
+          conversation_history: conversationHistory,
+          upload_in_progress: false,
+          auto_post_trigger: true
+        })
+      })
+
+      const data = await response.json()
+      setIsLoading(false)
+
+      if (data.success && data.response) {
+        streamText(data.response)
+      }
+    } catch (error) {
+      console.error('Auto-post trigger error:', error)
+      setIsLoading(false)
+      setIsThinking(false)
+      streamText('Entschuldigung, beim automatischen Posten ist etwas schief gelaufen.')
+    }
+  }
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -317,6 +382,12 @@ function ChatWindow({
       setIsLoading(false)
 
       if (data.success && data.response) {
+        // Check if agent signals ready to post
+        if (data.ready_to_post === true) {
+          setReadyToPost(true)
+          console.log('[Chat] Agent signaled ready to post')
+        }
+
         // Stream the assistant response character by character
         streamText(data.response)
       } else {
