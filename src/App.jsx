@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import ChatWindow from './components/ChatWindow'
+import Calendar from './components/Calendar'
 import { uploadHybrid } from './utils/uploadHybrid'
+import { Calendar as CalendarIcon } from 'lucide-react'
 
 // Mascot Component - Defined outside App to prevent re-renders
 const Mascot = ({ mouthOpen }) => (
@@ -46,6 +48,7 @@ function App() {
   const [videoUrl, setVideoUrl] = useState(null)
   const [notionPageId, setNotionPageId] = useState(null)
   const [showChatOnUpload, setShowChatOnUpload] = useState(false)
+  const [showCalendar, setShowCalendar] = useState(false)
   const [typewriterText, setTypewriterText] = useState('')
   const [isDeleting, setIsDeleting] = useState(false)
   const [messageIndex, setMessageIndex] = useState(0)
@@ -402,6 +405,9 @@ function App() {
           setReadyToPost={setReadyToPost}
         />
       )}
+      {showCalendar && (
+        <Calendar onClose={() => setShowCalendar(false)} />
+      )}
       {/* Mascot - Remove this line and the Mascot component if not needed */}
       {currentView === 'upload' && <Mascot mouthOpen={mouthOpen} />}
 
@@ -443,13 +449,22 @@ function App() {
             <div className="logo">
               <span className="logo-accent">CODA</span> Marketing
             </div>
-            <button
-              className="chat-fab"
-              onClick={() => setShowChatOnUpload(true)}
-              title="Hast du Fragen? Chatte mit mir!"
-            >
-              💬
-            </button>
+            <div className="header-buttons">
+              <button
+                className="calendar-fab"
+                onClick={() => setShowCalendar(true)}
+                title="Video Kalender öffnen"
+              >
+                <CalendarIcon size={20} />
+              </button>
+              <button
+                className="chat-fab"
+                onClick={() => setShowChatOnUpload(true)}
+                title="Hast du Fragen? Chatte mit mir!"
+              >
+                💬
+              </button>
+            </div>
           </div>
           <div className="typewriter-container">
             <h1 className="typewriter-title">
