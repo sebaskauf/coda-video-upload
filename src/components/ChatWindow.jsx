@@ -3,14 +3,35 @@ import { Send, Loader2, X, Square } from 'lucide-react'
 import './ChatWindow.css'
 
 // Chat Mascot Component
-const ChatMascot = ({ mouthOpen, isListening, isThinking }) => {
+const ChatMascot = ({ mouthOpen, isListening, isThinking, isWorking }) => {
   // Determine mascot state class
   let stateClass = ''
-  if (isListening) stateClass = 'listening'
+  if (isWorking) stateClass = 'working'
+  else if (isListening) stateClass = 'listening'
   else if (isThinking) stateClass = 'thinking'
 
   return (
     <div className={`chat-mascot ${stateClass}`}>
+      {/* Laptop appears when working */}
+      {isWorking && (
+        <div className="mascot-laptop">
+          <svg viewBox="0 0 120 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            {/* Laptop screen */}
+            <rect x="10" y="5" width="100" height="55" rx="4" fill="#1a1a1a" stroke="#333" strokeWidth="2"/>
+            {/* Screen content - code lines */}
+            <rect x="18" y="14" width="40" height="3" rx="1" fill="#ff6b00" className="code-line code-line-1"/>
+            <rect x="18" y="22" width="60" height="3" rx="1" fill="#ff8533" className="code-line code-line-2"/>
+            <rect x="18" y="30" width="35" height="3" rx="1" fill="#ff6b00" className="code-line code-line-3"/>
+            <rect x="18" y="38" width="55" height="3" rx="1" fill="#ff8533" className="code-line code-line-4"/>
+            <rect x="18" y="46" width="45" height="3" rx="1" fill="#ff6b00" className="code-line code-line-5"/>
+            {/* Laptop base/keyboard */}
+            <path d="M5 60 L10 55 L110 55 L115 60 L120 75 L0 75 L5 60Z" fill="#2a2a2a" stroke="#333" strokeWidth="1"/>
+            {/* Keyboard keys */}
+            <rect x="20" y="62" width="80" height="8" rx="2" fill="#1a1a1a"/>
+          </svg>
+        </div>
+      )}
+
       <svg viewBox="0 0 200 250" fill="none" xmlns="http://www.w3.org/2000/svg">
         {/* Body */}
         <ellipse cx="100" cy="180" rx="60" ry="50" fill="url(#chatMascotGradient)" />
@@ -37,22 +58,22 @@ const ChatMascot = ({ mouthOpen, isListening, isThinking }) => {
         {/* Head - drawn after ear so it's in front */}
         <ellipse cx="100" cy="90" rx="70" ry="60" fill="url(#chatMascotGradient)" />
 
-        {/* Eyes - squint when listening, look up when thinking */}
+        {/* Eyes - squint when listening, look up when thinking, focused when working */}
         <ellipse
           cx="75"
-          cy={isThinking ? "78" : "80"}
+          cy={isThinking ? "78" : isWorking ? "85" : "80"}
           rx="12"
-          ry={isListening ? "8" : "15"}
+          ry={isListening ? "8" : isWorking ? "12" : "15"}
           fill="white"
-          className={`chat-mascot-eye chat-mascot-eye-left ${isListening ? 'squinting' : ''} ${isThinking ? 'thinking' : ''}`}
+          className={`chat-mascot-eye chat-mascot-eye-left ${isListening ? 'squinting' : ''} ${isThinking ? 'thinking' : ''} ${isWorking ? 'working' : ''}`}
         />
         <ellipse
           cx="125"
-          cy={isThinking ? "78" : "80"}
+          cy={isThinking ? "78" : isWorking ? "85" : "80"}
           rx="12"
-          ry={isListening ? "8" : "15"}
+          ry={isListening ? "8" : isWorking ? "12" : "15"}
           fill="white"
-          className={`chat-mascot-eye chat-mascot-eye-right ${isListening ? 'squinting' : ''} ${isThinking ? 'thinking' : ''}`}
+          className={`chat-mascot-eye chat-mascot-eye-right ${isListening ? 'squinting' : ''} ${isThinking ? 'thinking' : ''} ${isWorking ? 'working' : ''}`}
         />
 
         {/* Thinking dots above head */}
@@ -64,19 +85,19 @@ const ChatMascot = ({ mouthOpen, isListening, isThinking }) => {
           </>
         )}
 
-        {/* Mouth */}
+        {/* Mouth - focused/concentrated expression when working */}
         <ellipse
           cx="100"
-          cy="110"
-          rx="10"
-          ry={mouthOpen ? "8" : "3"}
+          cy={isWorking ? "112" : "110"}
+          rx={isWorking ? "6" : "10"}
+          ry={mouthOpen ? "8" : isWorking ? "2" : "3"}
           fill="white"
           className="chat-mascot-mouth"
         />
 
-        {/* Arms */}
-        <ellipse cx="35" cy="170" rx="20" ry="25" fill="url(#chatMascotGradient)" className={`chat-mascot-arm-left ${isThinking ? 'thinking' : ''}`} />
-        <ellipse cx="165" cy="170" rx="20" ry="25" fill="url(#chatMascotGradient)" className={`chat-mascot-arm-right ${isThinking ? 'thinking' : ''}`} />
+        {/* Arms - typing position when working */}
+        <ellipse cx="35" cy="170" rx="20" ry="25" fill="url(#chatMascotGradient)" className={`chat-mascot-arm-left ${isThinking ? 'thinking' : ''} ${isWorking ? 'typing' : ''}`} />
+        <ellipse cx="165" cy="170" rx="20" ry="25" fill="url(#chatMascotGradient)" className={`chat-mascot-arm-right ${isThinking ? 'thinking' : ''} ${isWorking ? 'typing' : ''}`} />
 
         <defs>
           <linearGradient id="chatMascotGradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -122,8 +143,7 @@ function ChatWindow({
   const [mouthOpen, setMouthOpen] = useState(false)
   const [isListening, setIsListening] = useState(false)
   const [isThinking, setIsThinking] = useState(false)
-  const [showReadyAnimation, setShowReadyAnimation] = useState(false)
-  const [hasShownReadyAnimation, setHasShownReadyAnimation] = useState(false)
+  const [isWorking, setIsWorking] = useState(false) // For laptop typing animation
   const messagesEndRef = useRef(null)
   const textareaRef = useRef(null)
   const streamingIntervalRef = useRef(null)
@@ -139,18 +159,12 @@ function ChatWindow({
     }
   }, [chatMessages])
 
-  // Show celebration animation when readyToPost becomes true
+  // Show working animation when readyToPost becomes true (bot is uploading to Postiz)
   useEffect(() => {
-    if (readyToPost && !hasShownReadyAnimation) {
-      setShowReadyAnimation(true)
-      setHasShownReadyAnimation(true)
-      // Hide animation after 3 seconds
-      const timer = setTimeout(() => {
-        setShowReadyAnimation(false)
-      }, 3000)
-      return () => clearTimeout(timer)
+    if (readyToPost) {
+      setIsWorking(true)
     }
-  }, [readyToPost, hasShownReadyAnimation])
+  }, [readyToPost])
 
   // Format file size
   const formatFileSize = (bytes) => {
@@ -406,36 +420,7 @@ function ChatWindow({
 
   return (
     <div className="chat-overlay">
-      <ChatMascot mouthOpen={mouthOpen} isListening={isListening} isThinking={isThinking} />
-
-      {/* Ready to Post Celebration Animation */}
-      {showReadyAnimation && (
-        <div className="ready-animation-overlay">
-          <div className="ready-animation-content">
-            <div className="ready-checkmark">
-              <svg viewBox="0 0 52 52">
-                <circle className="ready-checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
-                <path className="ready-checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
-              </svg>
-            </div>
-            <h2 className="ready-title">Bereit zum Posten!</h2>
-            <p className="ready-subtitle">Wird gepostet sobald der Upload fertig ist</p>
-          </div>
-          <div className="confetti-container">
-            {[...Array(50)].map((_, i) => (
-              <div
-                key={i}
-                className="confetti"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  animationDelay: `${Math.random() * 0.5}s`,
-                  backgroundColor: ['#ff6b00', '#ff8533', '#ffaa00', '#fff', '#ff4500'][Math.floor(Math.random() * 5)]
-                }}
-              />
-            ))}
-          </div>
-        </div>
-      )}
+      <ChatMascot mouthOpen={mouthOpen} isListening={isListening} isThinking={isThinking} isWorking={isWorking} />
 
       <div className="chat-window">
         <div className="chat-header">

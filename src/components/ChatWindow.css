@@ -810,132 +810,120 @@
   }
 }
 
-/* Ready to Post Celebration Animation */
-.ready-animation-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.85);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10001;
-  animation: readyFadeIn 0.3s ease-out;
-  pointer-events: none;
+/* Working State - Quandale with Laptop */
+.chat-mascot.working {
+  animation: mascotWorking 1s ease-in-out infinite;
 }
 
-@keyframes readyFadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.ready-animation-content {
-  text-align: center;
-  animation: readyBounceIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@keyframes readyBounceIn {
-  0% {
-    opacity: 0;
-    transform: scale(0.3);
+@keyframes mascotWorking {
+  0%, 100% {
+    transform: translateY(0);
   }
   50% {
-    transform: scale(1.1);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
+    transform: translateY(-5px);
   }
 }
 
-.ready-checkmark {
-  width: 100px;
-  height: 100px;
-  margin: 0 auto 1.5rem;
-}
-
-.ready-checkmark svg {
-  width: 100%;
-  height: 100%;
-}
-
-.ready-checkmark-circle {
-  stroke: #ff6b00;
-  stroke-width: 3;
-  stroke-dasharray: 166;
-  stroke-dashoffset: 166;
-  animation: readyCircle 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
-}
-
-@keyframes readyCircle {
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
-.ready-checkmark-check {
-  stroke: #ff6b00;
-  stroke-width: 4;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-dasharray: 48;
-  stroke-dashoffset: 48;
-  animation: readyCheck 0.4s cubic-bezier(0.65, 0, 0.45, 1) 0.4s forwards;
-}
-
-@keyframes readyCheck {
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
-.ready-title {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #fff;
-  margin: 0 0 0.5rem;
-  text-shadow: 0 0 30px rgba(255, 107, 0, 0.5);
-}
-
-.ready-subtitle {
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.7);
-  margin: 0;
-}
-
-/* Confetti */
-.confetti-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  pointer-events: none;
-  overflow: hidden;
-}
-
-.confetti {
+/* Laptop positioned next to Quandale */
+.mascot-laptop {
   position: absolute;
-  top: -10px;
-  width: 10px;
-  height: 10px;
-  border-radius: 2px;
-  animation: confettiFall 3s linear forwards;
+  width: 100px;
+  height: auto;
+  left: -80px;
+  top: 100px;
+  animation: laptopAppear 0.5s ease-out forwards;
+  filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.5));
 }
 
-@keyframes confettiFall {
+@keyframes laptopAppear {
   0% {
-    transform: translateY(0) rotate(0deg);
-    opacity: 1;
+    opacity: 0;
+    transform: translateX(-20px) scale(0.8);
   }
   100% {
-    transform: translateY(100vh) rotate(720deg);
-    opacity: 0;
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+/* Code lines animation on laptop screen */
+.code-line {
+  opacity: 0.5;
+  animation: codeTyping 2s ease-in-out infinite;
+}
+
+.code-line-1 { animation-delay: 0s; }
+.code-line-2 { animation-delay: 0.2s; }
+.code-line-3 { animation-delay: 0.4s; }
+.code-line-4 { animation-delay: 0.6s; }
+.code-line-5 { animation-delay: 0.8s; }
+
+@keyframes codeTyping {
+  0%, 100% {
+    opacity: 0.3;
+    width: 20px;
+  }
+  50% {
+    opacity: 1;
+    width: 60px;
+  }
+}
+
+/* Arms typing animation */
+.chat-mascot-arm-left.typing {
+  animation: armTypingLeft 0.3s ease-in-out infinite;
+}
+
+.chat-mascot-arm-right.typing {
+  animation: armTypingRight 0.3s ease-in-out infinite;
+  animation-delay: 0.15s;
+}
+
+@keyframes armTypingLeft {
+  0%, 100% {
+    transform: translateX(-30px) translateY(-20px) rotate(25deg);
+  }
+  50% {
+    transform: translateX(-30px) translateY(-15px) rotate(25deg);
+  }
+}
+
+@keyframes armTypingRight {
+  0%, 100% {
+    transform: translateX(-30px) translateY(-20px) rotate(-25deg);
+  }
+  50% {
+    transform: translateX(-30px) translateY(-15px) rotate(-25deg);
+  }
+}
+
+/* Eyes focused on screen */
+.chat-mascot-eye.working {
+  animation: eyesFocused 3s ease-in-out infinite;
+}
+
+@keyframes eyesFocused {
+  0%, 100% {
+    transform: translateX(-3px);
+  }
+  50% {
+    transform: translateX(-5px);
+  }
+}
+
+/* Mobile adjustments for laptop */
+@media (max-width: 900px) {
+  .mascot-laptop {
+    width: 70px;
+    left: -50px;
+    top: 70px;
+  }
+}
+
+@media (max-width: 480px) {
+  .mascot-laptop {
+    width: 50px;
+    left: -35px;
+    top: 50px;
   }
 }
