@@ -285,6 +285,9 @@ function Calendar({ onClose }) {
   const renderUploadDetail = () => {
     if (!selectedUpload) return null
 
+    // Use account as primary display name, fallback to first account in array
+    const displayName = selectedUpload.accounts?.[0] || selectedUpload.account || 'Unbekannt'
+
     return (
       <div className="upload-detail-overlay" onClick={() => setSelectedUpload(null)}>
         <div className="upload-detail" onClick={e => e.stopPropagation()}>
@@ -294,13 +297,7 @@ function Calendar({ onClose }) {
 
           <div className="detail-header">
             <span className="detail-platform">{getPlatformIcons(selectedUpload.platforms)}</span>
-            <h3>{selectedUpload.customer || 'Unbekannt'}</h3>
-            <span
-              className="detail-status"
-              style={{ backgroundColor: getStatusColor(selectedUpload.status) }}
-            >
-              {getStatusLabel(selectedUpload.status)}
-            </span>
+            <h3>{displayName}</h3>
           </div>
 
           <div className="detail-body">
@@ -317,10 +314,10 @@ function Calendar({ onClose }) {
                 <span className="detail-label">Plattformen:</span>
                 <span className="detail-value">{selectedUpload.platforms?.join(', ') || 'Keine'}</span>
               </div>
-              {selectedUpload.accounts && selectedUpload.accounts.length > 0 && (
+              {selectedUpload.accounts && selectedUpload.accounts.length > 1 && (
                 <div className="detail-row">
-                  <span className="detail-label">Accounts:</span>
-                  <span className="detail-value">{selectedUpload.accounts.join(', ')}</span>
+                  <span className="detail-label">Weitere Accounts:</span>
+                  <span className="detail-value">{selectedUpload.accounts.slice(1).join(', ')}</span>
                 </div>
               )}
             </div>
@@ -427,16 +424,11 @@ function Calendar({ onClose }) {
           <span className="stat-label">Uploads gesamt</span>
         </div>
         <div className="stat">
-          <span className="stat-value">{uploads.filter(u => u.status?.toLowerCase() === 'done').length}</span>
-          <span className="stat-label">Fertig</span>
-        </div>
-        <div className="stat">
-          <span className="stat-value">{uploads.filter(u => u.status?.toLowerCase() === 'processing').length}</span>
-          <span className="stat-label">In Bearbeitung</span>
-        </div>
-        <div className="stat">
-          <span className="stat-value">{uploads.filter(u => u.status?.toLowerCase() === 'waiting instructions').length}</span>
-          <span className="stat-label">Wartend</span>
+          <span className="stat-value">{uploads.filter(u => {
+            const s = u.status?.toLowerCase() || ''
+            return s.includes('waiting') || s.includes('scheduled') || s.includes('planned') || s.includes('geplant')
+          }).length}</span>
+          <span className="stat-label">Geplant</span>
         </div>
       </div>
 
