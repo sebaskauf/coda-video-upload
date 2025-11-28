@@ -1659,11 +1659,21 @@ h1 {
   }
 }
 
-/* Upload Status Box - Floating indicator when chat is closed */
-.upload-status-box {
+/* Uploads Sidebar - Shows all active uploads */
+.uploads-sidebar {
   position: fixed;
   bottom: 24px;
   right: 24px;
+  z-index: 9998;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+}
+
+/* Upload Status Box - Floating indicator when chat is closed */
+.upload-status-box {
   background: linear-gradient(135deg, rgba(20, 20, 20, 0.95) 0%, rgba(30, 30, 30, 0.95) 100%);
   border: 1px solid rgba(255, 107, 0, 0.3);
   border-radius: 16px;
@@ -1672,12 +1682,13 @@ h1 {
   align-items: center;
   gap: 14px;
   cursor: pointer;
-  z-index: 9998;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 20px rgba(255, 107, 0, 0.15);
   backdrop-filter: blur(10px);
   transition: all 0.3s ease;
   animation: statusBoxSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   max-width: 320px;
+  min-width: 280px;
+  position: relative;
 }
 
 @keyframes statusBoxSlideIn {
@@ -1751,12 +1762,61 @@ h1 {
   color: #22c55e;
 }
 
+.upload-status-box.error {
+  border-color: rgba(239, 68, 68, 0.4);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 20px rgba(239, 68, 68, 0.15);
+}
+
+.upload-status-box.error:hover {
+  border-color: rgba(239, 68, 68, 0.6);
+}
+
+.upload-status-box-text.error {
+  color: #ef4444;
+}
+
+/* Close/Cancel button on upload box */
+.upload-status-box-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  opacity: 0;
+}
+
+.upload-status-box:hover .upload-status-box-close {
+  opacity: 1;
+}
+
+.upload-status-box-close:hover {
+  background: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
 /* Mobile adjustments */
 @media (max-width: 480px) {
-  .upload-status-box {
+  .uploads-sidebar {
     bottom: 16px;
     right: 16px;
     left: 16px;
+  }
+
+  .upload-status-box {
     max-width: none;
+    min-width: auto;
+  }
+
+  .upload-status-box-close {
+    opacity: 1;
   }
 }

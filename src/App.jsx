@@ -4,7 +4,10 @@ import ChatWindow from './components/ChatWindow'
 import Calendar from './components/Calendar'
 import Stats from './components/Stats'
 import { uploadHybrid } from './utils/uploadHybrid'
-import { Calendar as CalendarIcon, BarChart3 } from 'lucide-react'
+import { Calendar as CalendarIcon, BarChart3, X } from 'lucide-react'
+
+// Generate unique ID for each upload
+const generateUploadId = () => `upload_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
 // Mascot Component - Defined outside App to prevent re-renders
 const Mascot = ({ mouthOpen }) => (
@@ -42,12 +45,7 @@ const Mascot = ({ mouthOpen }) => (
 
 function App() {
   const [isDragging, setIsDragging] = useState(false)
-  const [files, setFiles] = useState([])
   const [uploadStatus, setUploadStatus] = useState('') // For error messages
-  const [currentView, setCurrentView] = useState('upload') // 'upload', 'chat'
-  const [videoId, setVideoId] = useState(null)
-  const [videoUrl, setVideoUrl] = useState(null)
-  const [notionPageId, setNotionPageId] = useState(null)
   const [showChatOnUpload, setShowChatOnUpload] = useState(false)
   const [showCalendar, setShowCalendar] = useState(false)
   const [showStats, setShowStats] = useState(false)
@@ -57,56 +55,68 @@ function App() {
   const [charIndex, setCharIndex] = useState(0)
   const [mouthOpen, setMouthOpen] = useState(false)
 
-  // Parallel Upload State
-  const [uploadState, setUploadState] = useState('idle') // 'idle' | 'uploading' | 'complete' | 'error'
-  const [uploadProgressPercent, setUploadProgressPercent] = useState(0)
-  const [estimatedTimeRemaining, setEstimatedTimeRemaining] = useState(null)
-  const [currentFileName, setCurrentFileName] = useState('')
-  const [currentFileSize, setCurrentFileSize] = useState(0)
-  const uploadStartTimeRef = useRef(null)
+  // Multi-Upload State: Array of upload sessions
+  const [uploads, setUploads] = useState([])
+  const [activeUploadId, setActiveUploadId] = useState(null) // Which upload's chat is open
+  const [generalChatMessages, setGeneralChatMessages] = useState([]) // For chat without upload
 
-  // Chat State (persists when chat is closed)
-  const [chatMessages, setChatMessages] = useState([])
-  const [readyToPost, setReadyToPost] = useState(false)
-  const [hasTriggeredAutoPost, setHasTriggeredAutoPost] = useState(false)
+  // Abort controllers for each upload
+  const abortControllersRef = useRef({})
 
   // Chat Webhook URL
   const CHAT_WEBHOOK_URL = 'https://n8n-self-host-n8n.qpo7vu.easypanel.host/webhook/chat'
 
-  // Auto-trigger post when upload completes - works even if chat is closed!
-  useEffect(() => {
-    if (
-      uploadState === 'complete' &&
-      videoId &&
-      readyToPost &&
-      !hasTriggeredAutoPost
-    ) {
-      console.log('[App] Auto-triggering post - upload complete and ready!')
-      setHasTriggeredAutoPost(true)
-      sendAutoPostTrigger()
-    }
-  }, [uploadState, videoId, readyToPost, hasTriggeredAutoPost])
+  // n8n Webhook URL - Production
+  const N8N_WEBHOOK_URL = 'https://n8n-self-host-n8n.qpo7vu.easypanel.host/webhook/video-upload'
 
-  // Send automatic post trigger to agent (runs from App level)
-  const sendAutoPostTrigger = async () => {
+  // Get active upload object
+  const activeUpload = uploads.find(u => u.id === activeUploadId)
+
+  // Auto-trigger post when any upload completes
+  useEffect(() => {
+    uploads.forEach(upload => {
+      if (
+        upload.state === 'complete' &&
+        upload.videoId &&
+        upload.readyToPost &&
+        !upload.hasTriggeredAutoPost
+      ) {
+        console.log('[App] Auto-triggering post for upload:', upload.id)
+        sendAutoPostTrigger(upload.id)
+      }
+    })
+  }, [uploads])
+
+  // Update a specific upload's state
+  const updateUpload = (uploadId, updates) => {
+    setUploads(prev => prev.map(u =>
+      u.id === uploadId ? { ...u, ...updates } : u
+    ))
+  }
+
+  // Send automatic post trigger to agent
+  const sendAutoPostTrigger = async (uploadId) => {
+    const upload = uploads.find(u => u.id === uploadId)
+    if (!upload) return
+
+    // Mark as triggered immediately to prevent double-triggers
+    updateUpload(uploadId, { hasTriggeredAutoPost: true })
+
     try {
-      // Build conversation history from saved messages
-      const conversationHistory = chatMessages.map(msg => ({
+      const conversationHistory = upload.chatMessages.map(msg => ({
         role: msg.role,
         content: msg.content
       }))
 
-      console.log('[App] Sending auto-post trigger to agent with video_id:', videoId)
+      console.log('[App] Sending auto-post trigger for:', upload.fileName)
 
       const response = await fetch(CHAT_WEBHOOK_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: '[SYSTEM] Video-Upload abgeschlossen. video_id ist jetzt verfügbar. Bitte führe den Post jetzt aus wie besprochen.',
-          video_id: videoId,
-          notion_page_id: notionPageId,
+          video_id: upload.videoId,
+          notion_page_id: upload.notionPageId,
           conversation_history: conversationHistory,
           upload_in_progress: false,
           auto_post_trigger: true
@@ -117,28 +127,29 @@ function App() {
       console.log('[App] Auto-post trigger response:', data)
 
       if (data.success && data.response) {
-        // Add the response to chat messages
-        setChatMessages(prev => [
-          ...prev,
-          {
-            role: 'user',
-            content: '[Video-Upload abgeschlossen - automatisch gepostet]',
-            timestamp: new Date(),
-            isSystem: true
-          },
-          {
-            role: 'assistant',
-            content: data.response,
-            timestamp: new Date()
-          }
-        ])
+        updateUpload(uploadId, {
+          chatMessages: [
+            ...upload.chatMessages,
+            {
+              role: 'user',
+              content: '[Video-Upload abgeschlossen - automatisch gepostet]',
+              timestamp: new Date(),
+              isSystem: true
+            },
+            {
+              role: 'assistant',
+              content: data.response,
+              timestamp: new Date()
+            }
+          ]
+        })
       }
     } catch (error) {
       console.error('[App] Auto-post trigger error:', error)
     }
   }
 
-  // Typewriter messages - title and subtitle pairs
+  // Typewriter messages
   const typewriterMessages = [
     { title: 'Videos hochladen', subtitle: 'Am besten als MP4' },
     { title: 'Fragen? Chat oben rechts!', subtitle: 'Ich helfe dir gerne' },
@@ -146,7 +157,7 @@ function App() {
 
   // Typewriter effect
   useEffect(() => {
-    if (currentView !== 'upload') return
+    if (activeUploadId) return // Don't animate when chat is open
 
     const currentMessage = typewriterMessages[messageIndex]
     const fullText = `${currentMessage.title}\n${currentMessage.subtitle}`
@@ -154,56 +165,44 @@ function App() {
     let timeout
 
     if (!isDeleting) {
-      // Typing
       if (charIndex < fullText.length) {
-        // Open mouth for each character
         setMouthOpen(true)
         timeout = setTimeout(() => {
           setTypewriterText(fullText.substring(0, charIndex + 1))
           setCharIndex(charIndex + 1)
-          // Close mouth after character is typed
           setTimeout(() => setMouthOpen(false), 30)
-        }, 50 + Math.random() * 30) // Slightly random for chunky feel
+        }, 50 + Math.random() * 30)
       } else {
-        // Finished typing, wait then start deleting
         setMouthOpen(false)
         timeout = setTimeout(() => {
           setIsDeleting(true)
         }, 5000)
       }
     } else {
-      // Deleting - mouth stays closed
       setMouthOpen(false)
       if (charIndex > 0) {
         timeout = setTimeout(() => {
           setTypewriterText(fullText.substring(0, charIndex - 1))
           setCharIndex(charIndex - 1)
-        }, 25) // Faster deletion
+        }, 25)
       } else {
-        // Finished deleting, move to next message
         setIsDeleting(false)
         setMessageIndex((messageIndex + 1) % typewriterMessages.length)
       }
     }
 
     return () => clearTimeout(timeout)
-  }, [charIndex, isDeleting, messageIndex, currentView])
+  }, [charIndex, isDeleting, messageIndex, activeUploadId])
 
-  // n8n Webhook URL - Production
-  const N8N_WEBHOOK_URL = 'https://n8n-self-host-n8n.qpo7vu.easypanel.host/webhook/video-upload'
-
-  // Erlaubte Video-Formate (MP4 bevorzugt!)
+  // Erlaubte Video-Formate
   const ALLOWED_VIDEO_TYPES = [
     'video/mp4',
-    'video/quicktime', // .mov (nicht ideal, aber akzeptiert)
+    'video/quicktime',
     'video/webm',
     'video/mpeg'
   ]
 
-  // Helper function to check if file is video
-  const isValidVideo = (file) => {
-    return ALLOWED_VIDEO_TYPES.includes(file.type)
-  }
+  const isValidVideo = (file) => ALLOWED_VIDEO_TYPES.includes(file.type)
 
   const handleDragOver = (e) => {
     e.preventDefault()
@@ -227,8 +226,7 @@ function App() {
     }
 
     if (validFiles.length > 0) {
-      // Start background upload and open chat immediately
-      startBackgroundUpload(validFiles[0])
+      startNewUpload(validFiles[0])
     }
   }
 
@@ -241,12 +239,12 @@ function App() {
     }
 
     if (validFiles.length > 0) {
-      // Start background upload and open chat immediately
-      startBackgroundUpload(validFiles[0])
+      startNewUpload(validFiles[0])
     }
+    // Reset input so same file can be selected again
+    e.target.value = ''
   }
 
-  // Helper to format time remaining
   const formatTimeRemaining = (seconds) => {
     if (seconds === null || seconds <= 0) return ''
     const mins = Math.floor(seconds / 60)
@@ -257,63 +255,6 @@ function App() {
     return `${secs}s verbleibend`
   }
 
-  // Start upload in background and open chat immediately
-  const startBackgroundUpload = async (file) => {
-    // IMPORTANT: Reset all states for new upload session
-    setVideoId(null)
-    setVideoUrl(null)
-    setNotionPageId(null)
-    setChatMessages([])
-    setReadyToPost(false)
-    setHasTriggeredAutoPost(false)
-
-    // Set upload state
-    setUploadState('uploading')
-    setUploadProgressPercent(0)
-    uploadStartTimeRef.current = Date.now()
-    setCurrentFileName(file.name)
-    setCurrentFileSize(file.size)
-    setFiles([file])
-
-    // Open chat immediately
-    setCurrentView('chat')
-
-    try {
-      const data = await uploadHybrid(
-        file,
-        N8N_WEBHOOK_URL,
-        (progress) => {
-          setUploadProgressPercent(progress)
-
-          // Calculate estimated time remaining
-          const elapsed = (Date.now() - uploadStartTimeRef.current) / 1000
-          if (progress > 5 && elapsed > 0) {
-            const totalEstimated = (elapsed / progress) * 100
-            const remaining = totalEstimated - elapsed
-            setEstimatedTimeRemaining(remaining)
-          }
-        }
-      )
-
-      // Upload complete!
-      setUploadState('complete')
-      setUploadProgressPercent(100)
-      setEstimatedTimeRemaining(null)
-
-      if (data.video_id) {
-        setVideoId(data.video_id)
-      }
-      if (data.video_url) {
-        setVideoUrl(data.video_url)
-      }
-
-    } catch (error) {
-      console.error('Upload error:', error)
-      setUploadState('error')
-      setUploadStatus('Upload fehlgeschlagen: ' + error.message)
-    }
-  }
-
   const formatFileSize = (bytes) => {
     if (bytes === 0) return '0 Bytes'
     const k = 1024
@@ -322,83 +263,199 @@ function App() {
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
   }
 
-  const resetUpload = () => {
-    setCurrentView('upload')
-    setFiles([])
-    setUploadStatus('')
-    setVideoId(null)
-    setVideoUrl(null)
-    setNotionPageId(null)
-    setUploadState('idle')
-    setUploadProgressPercent(0)
-    setEstimatedTimeRemaining(null)
-    setCurrentFileName('')
-    setCurrentFileSize(0)
+  // Start a new upload session
+  const startNewUpload = async (file) => {
+    const uploadId = generateUploadId()
+    const startTime = Date.now()
+
+    // Create new upload entry
+    const newUpload = {
+      id: uploadId,
+      fileName: file.name,
+      fileSize: file.size,
+      state: 'uploading',
+      progress: 0,
+      estimatedTimeRemaining: null,
+      startTime: startTime,
+      videoId: null,
+      videoUrl: null,
+      notionPageId: null,
+      chatMessages: [],
+      readyToPost: false,
+      hasTriggeredAutoPost: false
+    }
+
+    setUploads(prev => [...prev, newUpload])
+    setActiveUploadId(uploadId)
+
+    // Create abort controller for this upload
+    abortControllersRef.current[uploadId] = new AbortController()
+
+    try {
+      const data = await uploadHybrid(
+        file,
+        N8N_WEBHOOK_URL,
+        (progress) => {
+          const elapsed = (Date.now() - startTime) / 1000
+          let remaining = null
+          if (progress > 5 && elapsed > 0) {
+            const totalEstimated = (elapsed / progress) * 100
+            remaining = totalEstimated - elapsed
+          }
+          updateUpload(uploadId, {
+            progress,
+            estimatedTimeRemaining: remaining
+          })
+        },
+        abortControllersRef.current[uploadId].signal
+      )
+
+      // Upload complete!
+      updateUpload(uploadId, {
+        state: 'complete',
+        progress: 100,
+        estimatedTimeRemaining: null,
+        videoId: data.video_id || null,
+        videoUrl: data.video_url || null
+      })
+
+    } catch (error) {
+      if (error.name === 'AbortError') {
+        // Upload was cancelled - remove it
+        setUploads(prev => prev.filter(u => u.id !== uploadId))
+        if (activeUploadId === uploadId) {
+          setActiveUploadId(null)
+        }
+      } else {
+        console.error('Upload error:', error)
+        updateUpload(uploadId, {
+          state: 'error',
+          error: error.message
+        })
+      }
+    }
+
+    // Cleanup abort controller
+    delete abortControllersRef.current[uploadId]
+  }
+
+  // Cancel an upload
+  const cancelUpload = (uploadId) => {
+    if (abortControllersRef.current[uploadId]) {
+      abortControllersRef.current[uploadId].abort()
+    }
+    setUploads(prev => prev.filter(u => u.id !== uploadId))
+    if (activeUploadId === uploadId) {
+      setActiveUploadId(null)
+    }
+  }
+
+  // Remove completed/error upload from list
+  const removeUpload = (uploadId) => {
+    setUploads(prev => prev.filter(u => u.id !== uploadId))
+    if (activeUploadId === uploadId) {
+      setActiveUploadId(null)
+    }
   }
 
   const handleCloseChat = () => {
-    // Just close chat view - don't reset upload!
-    // Upload continues in background
-    setCurrentView('upload')
+    setActiveUploadId(null)
   }
 
-  // Full reset - only when starting completely new
-  const handleFullReset = () => {
-    resetUpload()
-    setChatMessages([])
-    setReadyToPost(false)
-    setHasTriggeredAutoPost(false)
+  // Set chat messages for active upload
+  const setActiveChatMessages = (messagesOrUpdater) => {
+    if (!activeUploadId) return
+    setUploads(prev => prev.map(u => {
+      if (u.id !== activeUploadId) return u
+      const newMessages = typeof messagesOrUpdater === 'function'
+        ? messagesOrUpdater(u.chatMessages)
+        : messagesOrUpdater
+      return { ...u, chatMessages: newMessages }
+    }))
   }
 
+  // Set readyToPost for active upload
+  const setActiveReadyToPost = (value) => {
+    if (!activeUploadId) return
+    updateUpload(activeUploadId, { readyToPost: value })
+  }
 
   return (
     <div className="app">
-      {/* Upload Status Box - shows when chat is closed but upload is running */}
-      {currentView !== 'chat' && uploadState === 'uploading' && (
-        <div className="upload-status-box" onClick={() => setCurrentView('chat')}>
-          <div className="upload-status-box-icon">📹</div>
-          <div className="upload-status-box-content">
-            <div className="upload-status-box-filename">{currentFileName}</div>
-            <div className="upload-status-box-progress">
-              <div
-                className="upload-status-box-progress-fill"
-                style={{ width: `${uploadProgressPercent}%` }}
-              />
+      {/* Upload Status Boxes - shows all uploads when chat is closed */}
+      {!activeUploadId && uploads.length > 0 && (
+        <div className="uploads-sidebar">
+          {uploads.map(upload => (
+            <div
+              key={upload.id}
+              className={`upload-status-box ${upload.state}`}
+              onClick={() => setActiveUploadId(upload.id)}
+            >
+              <div className="upload-status-box-icon">
+                {upload.state === 'complete' ? '✅' : upload.state === 'error' ? '❌' : '📹'}
+              </div>
+              <div className="upload-status-box-content">
+                <div className="upload-status-box-filename">{upload.fileName}</div>
+                {upload.state === 'uploading' && (
+                  <>
+                    <div className="upload-status-box-progress">
+                      <div
+                        className="upload-status-box-progress-fill"
+                        style={{ width: `${upload.progress}%` }}
+                      />
+                    </div>
+                    <div className="upload-status-box-text">
+                      {upload.progress}% {formatTimeRemaining(upload.estimatedTimeRemaining) && `• ${formatTimeRemaining(upload.estimatedTimeRemaining)}`}
+                    </div>
+                  </>
+                )}
+                {upload.state === 'complete' && (
+                  <div className="upload-status-box-text">Upload abgeschlossen!</div>
+                )}
+                {upload.state === 'error' && (
+                  <div className="upload-status-box-text error">Fehler: {upload.error}</div>
+                )}
+              </div>
+              <button
+                className="upload-status-box-close"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  if (upload.state === 'uploading') {
+                    cancelUpload(upload.id)
+                  } else {
+                    removeUpload(upload.id)
+                  }
+                }}
+                title={upload.state === 'uploading' ? 'Upload abbrechen' : 'Entfernen'}
+              >
+                <X size={16} />
+              </button>
             </div>
-            <div className="upload-status-box-text">
-              {uploadProgressPercent}% {formatTimeRemaining(estimatedTimeRemaining) && `• ${formatTimeRemaining(estimatedTimeRemaining)}`}
-            </div>
-          </div>
+          ))}
         </div>
       )}
 
-      {/* Upload Complete Box - shows when upload is done but chat is closed */}
-      {currentView !== 'chat' && uploadState === 'complete' && (
-        <div className="upload-status-box complete" onClick={() => setCurrentView('chat')}>
-          <div className="upload-status-box-icon">✅</div>
-          <div className="upload-status-box-content">
-            <div className="upload-status-box-filename">{currentFileName}</div>
-            <div className="upload-status-box-text">Upload abgeschlossen! Klicke um Chat zu öffnen</div>
-          </div>
-        </div>
-      )}
-
-      {currentView === 'chat' && (
+      {/* Chat Window for active upload */}
+      {activeUploadId && activeUpload && (
         <ChatWindow
-          videoId={videoId}
-          notionPageId={notionPageId}
+          videoId={activeUpload.videoId}
+          notionPageId={activeUpload.notionPageId}
           onClose={handleCloseChat}
-          uploadState={uploadState}
-          uploadProgress={uploadProgressPercent}
-          fileName={currentFileName}
-          fileSize={currentFileSize}
-          timeRemaining={formatTimeRemaining(estimatedTimeRemaining)}
-          chatMessages={chatMessages}
-          setChatMessages={setChatMessages}
-          readyToPost={readyToPost}
-          setReadyToPost={setReadyToPost}
+          uploadState={activeUpload.state}
+          uploadProgress={activeUpload.progress}
+          fileName={activeUpload.fileName}
+          fileSize={activeUpload.fileSize}
+          timeRemaining={formatTimeRemaining(activeUpload.estimatedTimeRemaining)}
+          chatMessages={activeUpload.chatMessages}
+          setChatMessages={setActiveChatMessages}
+          readyToPost={activeUpload.readyToPost}
+          setReadyToPost={setActiveReadyToPost}
+          onCancelUpload={() => cancelUpload(activeUploadId)}
+          canCancel={activeUpload.state === 'uploading'}
         />
       )}
+
+      {/* General Chat (no upload) */}
       {showChatOnUpload && (
         <ChatWindow
           videoId={null}
@@ -409,23 +466,25 @@ function App() {
           fileName=""
           fileSize={0}
           timeRemaining=""
-          chatMessages={chatMessages}
-          setChatMessages={setChatMessages}
-          readyToPost={readyToPost}
-          setReadyToPost={setReadyToPost}
+          chatMessages={generalChatMessages}
+          setChatMessages={setGeneralChatMessages}
+          readyToPost={false}
+          setReadyToPost={() => {}}
         />
       )}
+
       {showCalendar && (
         <Calendar onClose={() => setShowCalendar(false)} />
       )}
       {showStats && (
         <Stats onClose={() => setShowStats(false)} />
       )}
-      {/* Mascot - Remove this line and the Mascot component if not needed */}
-      {currentView === 'upload' && <Mascot mouthOpen={mouthOpen} />}
+
+      {/* Mascot */}
+      {!activeUploadId && <Mascot mouthOpen={mouthOpen} />}
 
       {/* Hands back parts - behind the box */}
-      {currentView === 'upload' && (
+      {!activeUploadId && (
         <>
           <div className="mascot-hand mascot-hand-left mascot-hand-back">
             <svg viewBox="0 0 80 100" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -455,7 +514,7 @@ function App() {
       )}
 
       <div className="container">
-        {currentView === 'upload' && (
+        {!activeUploadId && (
         <>
         <div className="header">
           <div className="logo-header-row">
@@ -533,7 +592,7 @@ function App() {
       </div>
 
       {/* Hands front parts - fingers in front of the box */}
-      {currentView === 'upload' && (
+      {!activeUploadId && (
         <>
           <div className="mascot-hand mascot-hand-left mascot-hand-front">
             <svg viewBox="0 0 80 100" fill="none" xmlns="http://www.w3.org/2000/svg">
