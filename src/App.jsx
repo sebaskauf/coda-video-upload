@@ -2,8 +2,9 @@ import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import ChatWindow from './components/ChatWindow'
 import Calendar from './components/Calendar'
+import Stats from './components/Stats'
 import { uploadHybrid } from './utils/uploadHybrid'
-import { Calendar as CalendarIcon } from 'lucide-react'
+import { Calendar as CalendarIcon, BarChart3 } from 'lucide-react'
 
 // Mascot Component - Defined outside App to prevent re-renders
 const Mascot = ({ mouthOpen }) => (
@@ -49,6 +50,7 @@ function App() {
   const [notionPageId, setNotionPageId] = useState(null)
   const [showChatOnUpload, setShowChatOnUpload] = useState(false)
   const [showCalendar, setShowCalendar] = useState(false)
+  const [showStats, setShowStats] = useState(false)
   const [typewriterText, setTypewriterText] = useState('')
   const [isDeleting, setIsDeleting] = useState(false)
   const [messageIndex, setMessageIndex] = useState(0)
@@ -408,6 +410,9 @@ function App() {
       {showCalendar && (
         <Calendar onClose={() => setShowCalendar(false)} />
       )}
+      {showStats && (
+        <Stats onClose={() => setShowStats(false)} />
+      )}
       {/* Mascot - Remove this line and the Mascot component if not needed */}
       {currentView === 'upload' && <Mascot mouthOpen={mouthOpen} />}
 
@@ -450,6 +455,13 @@ function App() {
               <span className="logo-accent">CODA</span> Marketing
             </div>
             <div className="header-buttons">
+              <button
+                className="stats-fab"
+                onClick={() => setShowStats(true)}
+                title="Statistiken anzeigen"
+              >
+                <BarChart3 size={20} />
+              </button>
               <button
                 className="calendar-fab"
                 onClick={() => setShowCalendar(true)}
