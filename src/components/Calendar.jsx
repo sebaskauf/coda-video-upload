@@ -54,35 +54,16 @@ function Calendar({ onClose }) {
 
       console.log('[Calendar] Parsed uploads:', rawUploads.length)
 
-      // Group uploads by customer + date (same customer, same day = one entry)
-      const groupedMap = new Map()
+      // Store each upload individually (no grouping)
+      const processedUploads = rawUploads.map(upload => ({
+        ...upload,
+        customer: upload.name,
+        platforms: [upload.platform].filter(Boolean),
+        accounts: [upload.account].filter(Boolean),
+        caption: upload.caption || ''
+      }))
 
-      rawUploads.forEach(upload => {
-        const date = new Date(upload.timestamp).toDateString()
-        const key = `${upload.name}-${date}`
-
-        if (groupedMap.has(key)) {
-          // Add platform to existing group
-          const existing = groupedMap.get(key)
-          if (!existing.platforms.includes(upload.platform)) {
-            existing.platforms.push(upload.platform)
-          }
-          if (upload.account && !existing.accounts.includes(upload.account)) {
-            existing.accounts.push(upload.account)
-          }
-        } else {
-          // Create new group
-          groupedMap.set(key, {
-            ...upload,
-            customer: upload.name,
-            platforms: [upload.platform].filter(Boolean),
-            accounts: [upload.account].filter(Boolean),
-            caption: upload.caption || ''
-          })
-        }
-      })
-
-      setUploads(Array.from(groupedMap.values()))
+      setUploads(processedUploads)
     } catch (err) {
       console.error('Calendar fetch error:', err)
       setError(err.message)
