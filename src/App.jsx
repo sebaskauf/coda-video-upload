@@ -391,6 +391,15 @@ function App() {
           videoId={null}
           notionPageId={null}
           onClose={() => setShowChatOnUpload(false)}
+          uploadState="idle"
+          uploadProgress={0}
+          fileName=""
+          fileSize={0}
+          timeRemaining=""
+          chatMessages={chatMessages}
+          setChatMessages={setChatMessages}
+          readyToPost={readyToPost}
+          setReadyToPost={setReadyToPost}
         />
       )}
       {/* Mascot - Remove this line and the Mascot component if not needed */}

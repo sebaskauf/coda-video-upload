@@ -117,7 +117,8 @@ function ChatWindow({
   const [streamingText, setStreamingText] = useState('')
   const [isStreaming, setIsStreaming] = useState(false)
   const [initialTypingText, setInitialTypingText] = useState('')
-  const [isInitialTyping, setIsInitialTyping] = useState(true)
+  // Only show initial typing if there are no messages yet
+  const [isInitialTyping, setIsInitialTyping] = useState(chatMessages.length === 0)
   const [mouthOpen, setMouthOpen] = useState(false)
   const [isListening, setIsListening] = useState(false)
   const [isThinking, setIsThinking] = useState(false)
@@ -126,6 +127,7 @@ function ChatWindow({
   const streamingIntervalRef = useRef(null)
   const initialTypingRef = useRef(null)
   const abortControllerRef = useRef(null)
+  const hasInitializedRef = useRef(chatMessages.length > 0)
 
   // Format file size
   const formatFileSize = (bytes) => {
@@ -146,8 +148,17 @@ function ChatWindow({
 
   const initialMessage = getInitialMessage()
 
-  // Typewriter effect for initial message
+  // Typewriter effect for initial message - ONLY if no messages exist yet
   useEffect(() => {
+    // Skip if already initialized (messages exist)
+    if (hasInitializedRef.current) {
+      setIsInitialTyping(false)
+      return
+    }
+
+    // Mark as initialized
+    hasInitializedRef.current = true
+
     let index = 0
     setIsInitialTyping(true)
     setInitialTypingText('')
