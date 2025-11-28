@@ -269,6 +269,12 @@
   color: rgba(255, 255, 255, 0.8);
   font-size: 14px;
   font-weight: 500;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .day-upload-badge {
