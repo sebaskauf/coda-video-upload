@@ -127,7 +127,15 @@ function ChatWindow({
   const streamingIntervalRef = useRef(null)
   const initialTypingRef = useRef(null)
   const abortControllerRef = useRef(null)
-  const hasInitializedRef = useRef(chatMessages.length > 0)
+  // Reset ref when chatMessages is empty (new session)
+  const hasInitializedRef = useRef(false)
+
+  // Sync ref with chatMessages - if messages exist, we're initialized
+  useEffect(() => {
+    if (chatMessages.length > 0) {
+      hasInitializedRef.current = true
+    }
+  }, [chatMessages])
 
   // Format file size
   const formatFileSize = (bytes) => {

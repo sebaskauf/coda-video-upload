@@ -259,6 +259,14 @@ function App() {
 
   // Start upload in background and open chat immediately
   const startBackgroundUpload = async (file) => {
+    // IMPORTANT: Reset all states for new upload session
+    setVideoId(null)
+    setVideoUrl(null)
+    setNotionPageId(null)
+    setChatMessages([])
+    setReadyToPost(false)
+    setHasTriggeredAutoPost(false)
+
     // Set upload state
     setUploadState('uploading')
     setUploadProgressPercent(0)
