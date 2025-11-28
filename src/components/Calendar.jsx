@@ -238,14 +238,11 @@ function Calendar({ onClose }) {
                 </span>
               </div>
               <div className="upload-card-body">
-                <h4 className="upload-customer-name">{upload.customer || 'Unbekannt'}</h4>
+                <h4 className="upload-customer-name">{upload.accounts?.[0] || upload.account || 'Unbekannt'}</h4>
                 <div className="upload-meta">
                   <span className="upload-day">{formatDay(upload.timestamp)}</span>
                   <span className="upload-time">{formatTime(upload.timestamp)}</span>
                 </div>
-                {upload.accounts && upload.accounts.length > 0 && (
-                  <p className="upload-accounts">{upload.accounts.join(', ')}</p>
-                )}
               </div>
             </div>
           ))
