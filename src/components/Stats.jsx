@@ -25,7 +25,20 @@ function Stats({ onClose }) {
       }
 
       const data = await response.json()
-      const rawUploads = Array.isArray(data) ? data : (data.uploads || [])
+      console.log('[Stats] Raw response:', data)
+
+      // Handle multiple response formats
+      let rawUploads = []
+      if (Array.isArray(data)) {
+        rawUploads = data
+      } else if (data.uploads && Array.isArray(data.uploads)) {
+        rawUploads = data.uploads
+      } else if (data.id || data.name || data.timestamp) {
+        // Single object returned - wrap in array
+        rawUploads = [data]
+      }
+
+      console.log('[Stats] Parsed uploads:', rawUploads.length)
       setUploads(rawUploads)
     } catch (err) {
       console.error('Stats fetch error:', err)

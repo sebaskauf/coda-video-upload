@@ -34,9 +34,23 @@ function Calendar({ onClose }) {
       }
 
       const data = await response.json()
+      console.log('[Calendar] Raw response:', data)
 
-      // Handle both array and { uploads: [] } format
-      const rawUploads = Array.isArray(data) ? data : (data.uploads || [])
+      // Handle multiple response formats:
+      // 1. Array of uploads: [{ ... }, { ... }]
+      // 2. Object with uploads key: { uploads: [...] }
+      // 3. Single object: { id: ..., name: ... }
+      let rawUploads = []
+      if (Array.isArray(data)) {
+        rawUploads = data
+      } else if (data.uploads && Array.isArray(data.uploads)) {
+        rawUploads = data.uploads
+      } else if (data.id || data.name || data.timestamp) {
+        // Single object returned - wrap in array
+        rawUploads = [data]
+      }
+
+      console.log('[Calendar] Parsed uploads:', rawUploads.length)
 
       // Group uploads by customer + date (same customer, same day = one entry)
       const groupedMap = new Map()
