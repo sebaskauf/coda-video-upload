@@ -122,6 +122,8 @@ function ChatWindow({
   const [mouthOpen, setMouthOpen] = useState(false)
   const [isListening, setIsListening] = useState(false)
   const [isThinking, setIsThinking] = useState(false)
+  const [showReadyAnimation, setShowReadyAnimation] = useState(false)
+  const [hasShownReadyAnimation, setHasShownReadyAnimation] = useState(false)
   const messagesEndRef = useRef(null)
   const textareaRef = useRef(null)
   const streamingIntervalRef = useRef(null)
@@ -136,6 +138,19 @@ function ChatWindow({
       hasInitializedRef.current = true
     }
   }, [chatMessages])
+
+  // Show celebration animation when readyToPost becomes true
+  useEffect(() => {
+    if (readyToPost && !hasShownReadyAnimation) {
+      setShowReadyAnimation(true)
+      setHasShownReadyAnimation(true)
+      // Hide animation after 3 seconds
+      const timer = setTimeout(() => {
+        setShowReadyAnimation(false)
+      }, 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [readyToPost, hasShownReadyAnimation])
 
   // Format file size
   const formatFileSize = (bytes) => {
@@ -392,6 +407,36 @@ function ChatWindow({
   return (
     <div className="chat-overlay">
       <ChatMascot mouthOpen={mouthOpen} isListening={isListening} isThinking={isThinking} />
+
+      {/* Ready to Post Celebration Animation */}
+      {showReadyAnimation && (
+        <div className="ready-animation-overlay">
+          <div className="ready-animation-content">
+            <div className="ready-checkmark">
+              <svg viewBox="0 0 52 52">
+                <circle className="ready-checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+                <path className="ready-checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+              </svg>
+            </div>
+            <h2 className="ready-title">Bereit zum Posten!</h2>
+            <p className="ready-subtitle">Wird gepostet sobald der Upload fertig ist</p>
+          </div>
+          <div className="confetti-container">
+            {[...Array(50)].map((_, i) => (
+              <div
+                key={i}
+                className="confetti"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  animationDelay: `${Math.random() * 0.5}s`,
+                  backgroundColor: ['#ff6b00', '#ff8533', '#ffaa00', '#fff', '#ff4500'][Math.floor(Math.random() * 5)]
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="chat-window">
         <div className="chat-header">
           <div className="chat-header-info">
