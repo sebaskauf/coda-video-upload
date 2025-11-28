@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Loader2, RefreshCw, X, TrendingUp, Users, Video, Calendar } from 'lucide-react'
+import PlatformIcon from './PlatformIcon'
 import './Stats.css'
 
 const NOTION_WEBHOOK_URL = 'https://n8n-self-host-n8n.qpo7vu.easypanel.host/webhook/notion-calendar'
@@ -63,34 +64,30 @@ function Stats({ onClose }) {
     })
   }
 
-  // Get customer stats sorted by upload count
+  // Get customer stats sorted by upload count - grouped by account
   const getCustomerStats = () => {
     const lastMonthUploads = getLastMonthUploads()
-    const customerMap = new Map()
+    const accountMap = new Map()
 
     lastMonthUploads.forEach(upload => {
-      const customer = upload.name || 'Unbekannt'
+      const account = upload.account || 'Unbekannt'
 
-      if (customerMap.has(customer)) {
-        const existing = customerMap.get(customer)
+      if (accountMap.has(account)) {
+        const existing = accountMap.get(account)
         existing.count++
-        if (!existing.platforms.includes(upload.platform)) {
+        if (upload.platform && !existing.platforms.includes(upload.platform)) {
           existing.platforms.push(upload.platform)
         }
-        if (upload.account && !existing.accounts.includes(upload.account)) {
-          existing.accounts.push(upload.account)
-        }
       } else {
-        customerMap.set(customer, {
-          name: customer,
+        accountMap.set(account, {
+          account: account,
           count: 1,
-          platforms: [upload.platform].filter(Boolean),
-          accounts: [upload.account].filter(Boolean)
+          platforms: [upload.platform].filter(Boolean)
         })
       }
     })
 
-    return Array.from(customerMap.values())
+    return Array.from(accountMap.values())
       .sort((a, b) => b.count - a.count)
   }
 
@@ -106,17 +103,6 @@ function Stats({ onClose }) {
 
     return Array.from(platformMap.entries())
       .sort((a, b) => b[1] - a[1])
-  }
-
-  const getPlatformIcon = (platform) => {
-    switch (platform?.toLowerCase()) {
-      case 'instagram': return '📸'
-      case 'tiktok': return '🎵'
-      case 'youtube': return '▶️'
-      case 'facebook': return '👤'
-      case 'linkedin': return '💼'
-      default: return '📹'
-    }
   }
 
   const getPlatformName = (platform) => {
@@ -201,19 +187,15 @@ function Stats({ onClose }) {
                   {customerStats.length === 0 ? (
                     <div className="no-data">Keine Uploads im letzten Monat</div>
                   ) : (
-                    customerStats.slice(0, 10).map((customer, idx) => (
-                      <div key={customer.name} className="customer-row">
+                    customerStats.slice(0, 3).map((customer, idx) => (
+                      <div key={customer.account} className={`customer-row rank-${idx + 1}`}>
                         <div className="customer-rank">#{idx + 1}</div>
                         <div className="customer-info">
-                          <span className="customer-name">{customer.name}</span>
-                          <span className="customer-accounts">
-                            {customer.accounts.slice(0, 3).join(', ')}
-                            {customer.accounts.length > 3 && ` +${customer.accounts.length - 3}`}
-                          </span>
+                          <span className="customer-name">{customer.account}</span>
                         </div>
                         <div className="customer-platforms">
                           {customer.platforms.map(p => (
-                            <span key={p} title={getPlatformName(p)}>{getPlatformIcon(p)}</span>
+                            <PlatformIcon key={p} platform={p} size={24} />
                           ))}
                         </div>
                         <div className="customer-count">
@@ -237,7 +219,9 @@ function Stats({ onClose }) {
                     return (
                       <div key={platform} className="platform-row">
                         <div className="platform-info">
-                          <span className="platform-icon">{getPlatformIcon(platform)}</span>
+                          <span className="platform-icon">
+                            <PlatformIcon platform={platform} size={28} />
+                          </span>
                           <span className="platform-name">{getPlatformName(platform)}</span>
                         </div>
                         <div className="platform-bar-container">
