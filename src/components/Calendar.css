@@ -345,37 +345,53 @@
   padding: 16px;
 }
 
-.upload-name {
+.upload-customer-name {
   color: #fff;
-  font-size: 16px;
-  font-weight: 500;
+  font-size: 18px;
+  font-weight: 600;
   margin: 0 0 8px 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.upload-customer {
+.upload-meta {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.upload-day {
+  color: #ff6b00;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.upload-time {
   color: rgba(255, 255, 255, 0.6);
   font-size: 14px;
-  margin: 0 0 4px 0;
 }
 
-.upload-date {
-  color: rgba(255, 255, 255, 0.4);
-  font-size: 12px;
+.upload-accounts {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
   margin: 0;
 }
 
-.upload-thumbnail {
-  height: 120px;
-  overflow: hidden;
+.upload-platforms {
+  font-size: 20px;
+  letter-spacing: 4px;
 }
 
-.upload-thumbnail img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.detail-caption {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 107, 0, 0.2);
+}
+
+.caption-text {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 8px 0 0 0;
+  white-space: pre-wrap;
 }
 
 /* Stats */

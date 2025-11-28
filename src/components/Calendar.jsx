@@ -34,7 +34,39 @@ function Calendar({ onClose }) {
       }
 
       const data = await response.json()
-      setUploads(data.uploads || [])
+
+      // Handle both array and { uploads: [] } format
+      const rawUploads = Array.isArray(data) ? data : (data.uploads || [])
+
+      // Group uploads by customer + date (same customer, same day = one entry)
+      const groupedMap = new Map()
+
+      rawUploads.forEach(upload => {
+        const date = new Date(upload.timestamp).toDateString()
+        const key = `${upload.name}-${date}`
+
+        if (groupedMap.has(key)) {
+          // Add platform to existing group
+          const existing = groupedMap.get(key)
+          if (!existing.platforms.includes(upload.platform)) {
+            existing.platforms.push(upload.platform)
+          }
+          if (upload.account && !existing.accounts.includes(upload.account)) {
+            existing.accounts.push(upload.account)
+          }
+        } else {
+          // Create new group
+          groupedMap.set(key, {
+            ...upload,
+            customer: upload.name,
+            platforms: [upload.platform].filter(Boolean),
+            accounts: [upload.account].filter(Boolean),
+            caption: upload.caption || ''
+          })
+        }
+      })
+
+      setUploads(Array.from(groupedMap.values()))
     } catch (err) {
       console.error('Calendar fetch error:', err)
       setError(err.message)
@@ -70,23 +102,21 @@ function Calendar({ onClose }) {
   }
 
   const getStatusColor = (status) => {
-    switch (status?.toLowerCase()) {
-      case 'done': return '#22c55e'
-      case 'processing': return '#f59e0b'
-      case 'waiting instructions': return '#3b82f6'
-      case 'error': return '#ef4444'
-      default: return '#6b7280'
-    }
+    const s = status?.toLowerCase() || ''
+    if (s.includes('done')) return '#22c55e'
+    if (s.includes('processing')) return '#f59e0b'
+    if (s.includes('waiting')) return '#3b82f6'
+    if (s.includes('error')) return '#ef4444'
+    return '#6b7280'
   }
 
   const getStatusLabel = (status) => {
-    switch (status?.toLowerCase()) {
-      case 'done': return 'Fertig'
-      case 'processing': return 'In Bearbeitung'
-      case 'waiting instructions': return 'Wartet auf Anweisungen'
-      case 'error': return 'Fehler'
-      default: return status || 'Unbekannt'
-    }
+    const s = status?.toLowerCase() || ''
+    if (s.includes('done')) return 'Fertig'
+    if (s.includes('processing')) return 'In Bearbeitung'
+    if (s.includes('waiting')) return 'Wartend'
+    if (s.includes('error')) return 'Fehler'
+    return status || 'Unbekannt'
   }
 
   const getPlatformIcon = (platform) => {
@@ -98,6 +128,11 @@ function Calendar({ onClose }) {
       case 'linkedin': return '💼'
       default: return '📹'
     }
+  }
+
+  const getPlatformIcons = (platforms) => {
+    if (!platforms || platforms.length === 0) return '📹'
+    return platforms.map(p => getPlatformIcon(p)).join(' ')
   }
 
   // Get uploads for a specific day
@@ -174,6 +209,23 @@ function Calendar({ onClose }) {
     return days
   }
 
+  const formatTime = (dateStr) => {
+    const date = new Date(dateStr)
+    return date.toLocaleTimeString('de-DE', {
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
+
+  const formatDay = (dateStr) => {
+    const date = new Date(dateStr)
+    return date.toLocaleDateString('de-DE', {
+      weekday: 'short',
+      day: '2-digit',
+      month: '2-digit'
+    })
+  }
+
   const renderListView = () => {
     const sortedUploads = [...uploads].sort((a, b) =>
       new Date(b.timestamp) - new Date(a.timestamp)
@@ -191,7 +243,7 @@ function Calendar({ onClose }) {
               onClick={() => setSelectedUpload(upload)}
             >
               <div className="upload-card-header">
-                <span className="upload-platform">{getPlatformIcon(upload.platform)}</span>
+                <span className="upload-platforms">{getPlatformIcons(upload.platforms)}</span>
                 <span
                   className="upload-status"
                   style={{ backgroundColor: getStatusColor(upload.status) }}
@@ -200,15 +252,15 @@ function Calendar({ onClose }) {
                 </span>
               </div>
               <div className="upload-card-body">
-                <h4 className="upload-name">{upload.name || 'Unbenannt'}</h4>
-                <p className="upload-customer">{upload.customer || 'Kein Kunde'}</p>
-                <p className="upload-date">{formatDate(upload.timestamp)}</p>
-              </div>
-              {upload.thumbnail && (
-                <div className="upload-thumbnail">
-                  <img src={upload.thumbnail} alt="Thumbnail" />
+                <h4 className="upload-customer-name">{upload.customer || 'Unbekannt'}</h4>
+                <div className="upload-meta">
+                  <span className="upload-day">{formatDay(upload.timestamp)}</span>
+                  <span className="upload-time">{formatTime(upload.timestamp)}</span>
                 </div>
-              )}
+                {upload.accounts && upload.accounts.length > 0 && (
+                  <p className="upload-accounts">{upload.accounts.join(', ')}</p>
+                )}
+              </div>
             </div>
           ))
         )}
@@ -227,8 +279,8 @@ function Calendar({ onClose }) {
           </button>
 
           <div className="detail-header">
-            <span className="detail-platform">{getPlatformIcon(selectedUpload.platform)}</span>
-            <h3>{selectedUpload.name || 'Video Upload'}</h3>
+            <span className="detail-platform">{getPlatformIcons(selectedUpload.platforms)}</span>
+            <h3>{selectedUpload.customer || 'Unbekannt'}</h3>
             <span
               className="detail-status"
               style={{ backgroundColor: getStatusColor(selectedUpload.status) }}
@@ -238,44 +290,33 @@ function Calendar({ onClose }) {
           </div>
 
           <div className="detail-body">
-            {selectedUpload.thumbnail && (
-              <div className="detail-thumbnail">
-                <img src={selectedUpload.thumbnail} alt="Video Thumbnail" />
-              </div>
-            )}
-
             <div className="detail-info">
               <div className="detail-row">
-                <span className="detail-label">Kunde:</span>
-                <span className="detail-value">{selectedUpload.customer || 'Unbekannt'}</span>
+                <span className="detail-label">Datum:</span>
+                <span className="detail-value">{formatDay(selectedUpload.timestamp)}</span>
               </div>
               <div className="detail-row">
-                <span className="detail-label">Plattform:</span>
-                <span className="detail-value">{selectedUpload.platform || 'Nicht angegeben'}</span>
+                <span className="detail-label">Uhrzeit:</span>
+                <span className="detail-value">{formatTime(selectedUpload.timestamp)}</span>
               </div>
               <div className="detail-row">
-                <span className="detail-label">Hochgeladen:</span>
-                <span className="detail-value">{formatDate(selectedUpload.timestamp)}</span>
+                <span className="detail-label">Plattformen:</span>
+                <span className="detail-value">{selectedUpload.platforms?.join(', ') || 'Keine'}</span>
               </div>
-              {selectedUpload.scheduled_date && (
+              {selectedUpload.accounts && selectedUpload.accounts.length > 0 && (
                 <div className="detail-row">
-                  <span className="detail-label">Geplant für:</span>
-                  <span className="detail-value">{formatDate(selectedUpload.scheduled_date)}</span>
-                </div>
-              )}
-              {selectedUpload.video_id && (
-                <div className="detail-row">
-                  <span className="detail-label">Video ID:</span>
-                  <span className="detail-value mono">{selectedUpload.video_id}</span>
-                </div>
-              )}
-              {selectedUpload.result && (
-                <div className="detail-row">
-                  <span className="detail-label">Ergebnis:</span>
-                  <span className="detail-value">{selectedUpload.result}</span>
+                  <span className="detail-label">Accounts:</span>
+                  <span className="detail-value">{selectedUpload.accounts.join(', ')}</span>
                 </div>
               )}
             </div>
+
+            {selectedUpload.caption && (
+              <div className="detail-caption">
+                <span className="detail-label">Caption:</span>
+                <p className="caption-text">{selectedUpload.caption}</p>
+              </div>
+            )}
 
             {selectedUpload.video_url && (
               <a
