@@ -1,19 +1,56 @@
-.calendar-container {
+.calendar-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
   z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.calendar-container {
+  background: rgb(10, 10, 10);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 1000px;
+  max-height: 90vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  box-shadow:
+    0 8px 32px rgba(255, 107, 0, 0.3),
+    0 0 0 1px rgba(255, 107, 0, 0.2),
+    inset 0 0 60px rgba(255, 107, 0, 0.05);
+  border: 1px solid rgba(255, 107, 0, 0.3);
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .calendar-header {
   padding: 20px 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 107, 0, 0.2);
+  background: rgba(255, 107, 0, 0.05);
 }
 
 .calendar-title {
@@ -31,17 +68,18 @@
 }
 
 .calendar-close {
-  background: rgba(255, 255, 255, 0.1);
-  border: none;
+  background: rgba(255, 107, 0, 0.1);
+  border: 1px solid rgba(255, 107, 0, 0.3);
   border-radius: 8px;
   padding: 8px;
-  color: #fff;
+  color: #ff6b00;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .calendar-close:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 107, 0, 0.2);
+  color: #fff;
 }
 
 .calendar-controls {
@@ -70,8 +108,9 @@
 }
 
 .view-toggle button.active {
-  background: #ff6b00;
+  background: linear-gradient(135deg, #ff6b00 0%, #ff8533 100%);
   color: #fff;
+  box-shadow: 0 2px 10px rgba(255, 107, 0, 0.4);
 }
 
 .view-toggle button:hover:not(.active) {
@@ -345,8 +384,8 @@
   justify-content: center;
   gap: 32px;
   padding: 20px;
-  background: rgba(0, 0, 0, 0.2);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 107, 0, 0.05);
+  border-top: 1px solid rgba(255, 107, 0, 0.2);
 }
 
 .stat {
@@ -358,6 +397,7 @@
   font-size: 24px;
   font-weight: 600;
   color: #ff6b00;
+  text-shadow: 0 0 20px rgba(255, 107, 0, 0.5);
 }
 
 .stat-label {
@@ -485,18 +525,20 @@
 .detail-video-link {
   display: block;
   text-align: center;
-  background: #ff6b00;
+  background: linear-gradient(135deg, #ff6b00 0%, #ff8533 100%);
   color: #fff;
   padding: 12px 24px;
   border-radius: 8px;
   text-decoration: none;
   margin-top: 20px;
   font-weight: 500;
-  transition: background 0.2s;
+  transition: all 0.2s;
+  box-shadow: 0 4px 15px rgba(255, 107, 0, 0.4);
 }
 
 .detail-video-link:hover {
-  background: #ff8533;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 107, 0, 0.6);
 }
 
 /* Responsive */

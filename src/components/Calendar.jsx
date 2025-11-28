@@ -294,14 +294,15 @@ function Calendar({ onClose }) {
   }
 
   return (
-    <div className="calendar-container">
-      <div className="calendar-header">
-        <div className="calendar-title">
-          <h2>Video Kalender</h2>
-          <button className="calendar-close" onClick={onClose}>
-            <X size={24} />
-          </button>
-        </div>
+    <div className="calendar-overlay" onClick={onClose}>
+      <div className="calendar-container" onClick={e => e.stopPropagation()}>
+        <div className="calendar-header">
+          <div className="calendar-title">
+            <h2>Video Kalender</h2>
+            <button className="calendar-close" onClick={onClose}>
+              <X size={24} />
+            </button>
+          </div>
 
         <div className="calendar-controls">
           <div className="view-toggle">
@@ -384,7 +385,8 @@ function Calendar({ onClose }) {
         </div>
       </div>
 
-      {selectedUpload && renderUploadDetail()}
+        {selectedUpload && renderUploadDetail()}
+      </div>
     </div>
   )
 }
