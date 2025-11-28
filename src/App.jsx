@@ -4,23 +4,17 @@ import ChatWindow from './components/ChatWindow'
 import Calendar from './components/Calendar'
 import Stats from './components/Stats'
 import { uploadHybrid } from './utils/uploadHybrid'
-import { Calendar as CalendarIcon, BarChart3, X, Upload, MessageCircle } from 'lucide-react'
+import { Calendar as CalendarIcon, BarChart3, X } from 'lucide-react'
 
 // Generate unique ID for each upload
 const generateUploadId = () => `upload_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
-// Full Body Mascot Component
+// Mascot Component - Defined outside App to prevent re-renders
 const Mascot = ({ mouthOpen }) => (
   <div className="mascot-container">
-    <svg className="mascot" viewBox="0 0 400 450" fill="none" xmlns="http://www.w3.org/2000/svg">
-      {/* Body */}
-      <ellipse cx="200" cy="320" rx="100" ry="110" fill="url(#mascotGradient)" />
-
-      {/* Feet */}
-      <ellipse cx="130" cy="420" rx="45" ry="25" fill="url(#mascotGradient)" />
-      <ellipse cx="270" cy="420" rx="45" ry="25" fill="url(#mascotGradient)" />
-
-      {/* Head */}
+    {/* Main Mascot Head */}
+    <svg className="mascot" viewBox="0 0 400 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Head - wide half-circle sitting on top of box */}
       <ellipse cx="200" cy="120" rx="140" ry="100" fill="url(#mascotGradient)" />
 
       {/* Eyes - white only, animated */}
@@ -47,21 +41,6 @@ const Mascot = ({ mouthOpen }) => (
       </defs>
     </svg>
   </div>
-)
-
-// Floating Action Button Component
-const FloatingButton = ({ icon, label, onClick, delay = 0, position }) => (
-  <button
-    className={`floating-action-btn floating-btn-${position}`}
-    onClick={onClick}
-    style={{ animationDelay: `${delay}s` }}
-    title={label}
-  >
-    <div className="floating-btn-glow" />
-    <div className="floating-btn-content">
-      {icon}
-    </div>
-  </button>
 )
 
 function App() {
@@ -501,59 +480,17 @@ function App() {
         <Stats onClose={() => setShowStats(false)} />
       )}
 
-      {/* Full screen drag zone - allow dropping anywhere */}
-      {!activeUploadId && (
-        <div
-          className={`fullscreen-dropzone ${isDragging ? 'active' : ''}`}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-        >
-          {isDragging && (
-            <div className="drag-overlay">
-              <div className="drag-overlay-content">
-                <Upload size={64} />
-                <p>Video hier ablegen</p>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Hidden file input */}
-      <input
-        id="fileInput"
-        type="file"
-        multiple
-        accept="video/*"
-        onChange={handleFileSelect}
-        style={{ display: 'none' }}
-      />
-
-      {/* Logo in corner */}
-      {!activeUploadId && (
-        <div className="logo-corner">
-          <span className="logo-accent">CODA</span> Marketing
-        </div>
-      )}
-
-      {/* Mascot with full body */}
+      {/* Mascot */}
       {!activeUploadId && <Mascot mouthOpen={mouthOpen} />}
 
-      {/* Hands - flat, facing forward */}
+      {/* Hands back parts - behind the box */}
       {!activeUploadId && (
         <>
-          <div className="mascot-hand mascot-hand-left">
-            <svg viewBox="0 0 120 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-              {/* Palm */}
-              <ellipse cx="60" cy="50" rx="50" ry="30" fill="url(#handGradientLeft)" />
-              {/* Fingers */}
-              <ellipse cx="20" cy="30" rx="15" ry="20" fill="url(#handGradientLeft)" />
-              <ellipse cx="45" cy="20" rx="14" ry="22" fill="url(#handGradientLeft)" />
-              <ellipse cx="75" cy="20" rx="14" ry="22" fill="url(#handGradientLeft)" />
-              <ellipse cx="100" cy="30" rx="15" ry="20" fill="url(#handGradientLeft)" />
+          <div className="mascot-hand mascot-hand-left mascot-hand-back">
+            <svg viewBox="0 0 80 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <ellipse cx="40" cy="55" rx="32" ry="28" fill="url(#pawGradientLeftBack)" />
               <defs>
-                <linearGradient id="handGradientLeft" x1="0%" y1="0%" x2="100%" y2="100%">
+                <linearGradient id="pawGradientLeftBack" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stopColor="#ff6b00" />
                   <stop offset="50%" stopColor="#ff8533" />
                   <stop offset="100%" stopColor="#ff6b00" />
@@ -561,17 +498,11 @@ function App() {
               </defs>
             </svg>
           </div>
-          <div className="mascot-hand mascot-hand-right">
-            <svg viewBox="0 0 120 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-              {/* Palm */}
-              <ellipse cx="60" cy="50" rx="50" ry="30" fill="url(#handGradientRight)" />
-              {/* Fingers */}
-              <ellipse cx="20" cy="30" rx="15" ry="20" fill="url(#handGradientRight)" />
-              <ellipse cx="45" cy="20" rx="14" ry="22" fill="url(#handGradientRight)" />
-              <ellipse cx="75" cy="20" rx="14" ry="22" fill="url(#handGradientRight)" />
-              <ellipse cx="100" cy="30" rx="15" ry="20" fill="url(#handGradientRight)" />
+          <div className="mascot-hand mascot-hand-right mascot-hand-back">
+            <svg viewBox="0 0 80 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <ellipse cx="40" cy="55" rx="32" ry="28" fill="url(#pawGradientRightBack)" />
               <defs>
-                <linearGradient id="handGradientRight" x1="0%" y1="0%" x2="100%" y2="100%">
+                <linearGradient id="pawGradientRightBack" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stopColor="#ff6b00" />
                   <stop offset="50%" stopColor="#ff8533" />
                   <stop offset="100%" stopColor="#ff6b00" />
@@ -582,59 +513,116 @@ function App() {
         </>
       )}
 
-      {/* Floating Action Buttons - 4 buttons floating above hands */}
-      {!activeUploadId && (
-        <div className="floating-buttons-container">
-          <FloatingButton
-            icon={<MessageCircle size={32} />}
-            label="Chat"
-            onClick={() => setShowChatOnUpload(true)}
-            delay={0}
-            position="1"
-          />
-          <FloatingButton
-            icon={<CalendarIcon size={32} />}
-            label="Kalender"
-            onClick={() => setShowCalendar(true)}
-            delay={0.1}
-            position="2"
-          />
-          <FloatingButton
-            icon={<BarChart3 size={32} />}
-            label="Statistiken"
-            onClick={() => setShowStats(true)}
-            delay={0.2}
-            position="3"
-          />
-          <FloatingButton
-            icon={<Upload size={32} />}
-            label="Upload"
-            onClick={() => document.getElementById('fileInput').click()}
-            delay={0.3}
-            position="4"
-          />
+      <div className="container">
+        {!activeUploadId && (
+        <>
+        <div className="header">
+          <div className="logo-header-row">
+            <div className="logo">
+              <span className="logo-accent">CODA</span> Marketing
+            </div>
+            <div className="header-buttons">
+              <button
+                className="stats-fab"
+                onClick={() => setShowStats(true)}
+                title="Statistiken anzeigen"
+              >
+                <BarChart3 size={20} />
+              </button>
+              <button
+                className="calendar-fab"
+                onClick={() => setShowCalendar(true)}
+                title="Video Kalender öffnen"
+              >
+                <CalendarIcon size={20} />
+              </button>
+              <button
+                className="chat-fab"
+                onClick={() => setShowChatOnUpload(true)}
+                title="Hast du Fragen? Chatte mit mir!"
+              >
+                💬
+              </button>
+            </div>
+          </div>
+          <div className="typewriter-container">
+            <h1 className="typewriter-title">
+              {typewriterText.split('\n')[0]}
+              {!typewriterText.includes('\n') && <span className="typewriter-cursor">▌</span>}
+            </h1>
+            <p className="subtitle typewriter-subtitle">
+              {typewriterText.split('\n')[1] || ''}
+              {typewriterText.includes('\n') && <span className="typewriter-cursor">▌</span>}
+            </p>
+          </div>
         </div>
-      )}
 
-      {/* Typewriter text */}
-      {!activeUploadId && (
-        <div className="typewriter-floating">
-          <h1 className="typewriter-title">
-            {typewriterText.split('\n')[0]}
-            {!typewriterText.includes('\n') && <span className="typewriter-cursor">▌</span>}
-          </h1>
-          <p className="subtitle typewriter-subtitle">
-            {typewriterText.split('\n')[1] || ''}
-            {typewriterText.includes('\n') && <span className="typewriter-cursor">▌</span>}
-          </p>
+        <div
+          className={`dropzone ${isDragging ? 'dragging' : ''}`}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          onClick={() => document.getElementById('fileInput').click()}
+        >
+          <input
+            id="fileInput"
+            type="file"
+            multiple
+            accept="video/*"
+            onChange={handleFileSelect}
+            style={{ display: 'none' }}
+          />
+          <div className="dropzone-content">
+            <svg className="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+            <p className="dropzone-text">
+              Videos hier reinziehen oder klicken
+            </p>
+          </div>
         </div>
-      )}
 
-      {/* Status messages */}
-      {uploadStatus && (
-        <div className={`status-message floating-status ${uploadStatus.includes('Fehler') || uploadStatus.includes('konfiguriere') ? 'error' : 'success'}`}>
-          {uploadStatus}
-        </div>
+        {uploadStatus && (
+          <div className={`status-message ${uploadStatus.includes('Fehler') || uploadStatus.includes('konfiguriere') ? 'error' : 'success'}`}>
+            {uploadStatus}
+          </div>
+        )}
+        </>
+        )}
+      </div>
+
+      {/* Hands front parts - fingers in front of the box */}
+      {!activeUploadId && (
+        <>
+          <div className="mascot-hand mascot-hand-left mascot-hand-front">
+            <svg viewBox="0 0 80 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="18" cy="38" r="14" fill="url(#pawGradientLeftFront)" />
+              <circle cx="38" cy="28" r="13" fill="url(#pawGradientLeftFront)" />
+              <circle cx="58" cy="38" r="14" fill="url(#pawGradientLeftFront)" />
+              <defs>
+                <linearGradient id="pawGradientLeftFront" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#ff6b00" />
+                  <stop offset="50%" stopColor="#ff8533" />
+                  <stop offset="100%" stopColor="#ff6b00" />
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <div className="mascot-hand mascot-hand-right mascot-hand-front">
+            <svg viewBox="0 0 80 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="22" cy="38" r="14" fill="url(#pawGradientRightFront)" />
+              <circle cx="42" cy="28" r="13" fill="url(#pawGradientRightFront)" />
+              <circle cx="62" cy="38" r="14" fill="url(#pawGradientRightFront)" />
+              <defs>
+                <linearGradient id="pawGradientRightFront" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#ff6b00" />
+                  <stop offset="50%" stopColor="#ff8533" />
+                  <stop offset="100%" stopColor="#ff6b00" />
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+        </>
       )}
     </div>
   )

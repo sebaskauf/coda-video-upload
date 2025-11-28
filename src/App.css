@@ -1,7 +1,9 @@
 .app {
   min-height: 100vh;
+  padding: 2rem;
+  padding-top: 12rem;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   background:
     radial-gradient(circle at 20% 50%, rgba(255, 107, 0, 0.15) 0%, transparent 50%),
@@ -21,7 +23,6 @@
   background:
     linear-gradient(90deg, transparent 0%, rgba(255, 107, 0, 0.03) 50%, transparent 100%);
   animation: scan 8s linear infinite;
-  pointer-events: none;
 }
 
 @keyframes scan {
@@ -29,293 +30,108 @@
   100% { transform: translateX(100%); }
 }
 
-/* Logo in corner */
-.logo-corner {
-  position: fixed;
-  top: 24px;
-  left: 24px;
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--color-text-primary);
-  letter-spacing: 0.05em;
-  text-shadow: 0 0 20px rgba(255, 107, 0, 0.5);
-  z-index: 100;
-}
-
-/* Fullscreen drop zone */
-.fullscreen-dropzone {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1;
-}
-
-.fullscreen-dropzone.active {
-  z-index: 9000;
-}
-
-.drag-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.9);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: fadeIn 0.2s ease;
-}
-
-.drag-overlay-content {
-  text-align: center;
-  color: var(--color-primary);
-  animation: pulseScale 1s ease-in-out infinite;
-}
-
-.drag-overlay-content svg {
-  margin-bottom: 1rem;
-  filter: drop-shadow(0 0 30px rgba(255, 107, 0, 0.8));
-}
-
-.drag-overlay-content p {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: white;
-}
-
-@keyframes pulseScale {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+.container {
+  background: rgb(10, 10, 10);
+  border-radius: 16px;
+  padding: 3rem;
+  max-width: 800px;
+  width: 100%;
+  box-shadow:
+    0 8px 32px rgba(255, 107, 0, 0.3),
+    0 0 0 1px rgba(255, 107, 0, 0.2),
+    inset 0 0 60px rgba(255, 107, 0, 0.05);
+  position: relative;
+  z-index: 2;
+  border: 1px solid rgba(255, 107, 0, 0.3);
+  animation: float 6s ease-in-out infinite;
 }
 
 /* ========================================
-   MASCOT STYLES - Full body centered design
+   MASCOT STYLES - Remove this section if not needed
    ======================================== */
 .mascot-container {
   position: fixed;
-  top: 50%;
+  top: 13rem;
   left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 10;
+  transform: translate(-50%, -100%);
+  z-index: 1;
   pointer-events: none;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-end;
   animation: mascotAppear 0.8s ease-out, mascotIdle 6s ease-in-out 0.8s infinite;
 }
 
 @keyframes mascotAppear {
   0% {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(0.7);
+    transform: translate(-50%, -80%) scale(0.7);
   }
   60% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1.05);
+    transform: translate(-50%, -105%) scale(1.05);
   }
   100% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
+    transform: translate(-50%, -100%) scale(1);
   }
 }
 
 .mascot {
-  width: 350px;
+  width: 500px;
   height: auto;
   filter: drop-shadow(0 10px 30px rgba(255, 107, 0, 0.4));
 }
 
-/* Mascot Hands - flat facing forward */
+/* Mascot Hands */
 .mascot-hand {
   position: fixed;
-  width: 140px;
+  width: 130px;
   height: auto;
   filter: drop-shadow(0 5px 15px rgba(255, 107, 0, 0.4));
   pointer-events: none;
-  z-index: 11;
-  animation: handFloat 6s ease-in-out infinite;
 }
 
 .mascot-hand-left {
-  left: calc(50% - 320px);
-  top: calc(50% + 60px);
-  transform: translateY(-50%) rotate(-15deg);
+  left: calc(50% - 480px);
+  top: calc(12rem + 280px);
+  transform: translateY(-50%);
 }
 
 .mascot-hand-right {
-  right: calc(50% - 320px);
-  top: calc(50% + 60px);
-  transform: translateY(-50%) rotate(15deg);
+  right: calc(50% - 480px);
+  top: calc(12rem + 280px);
+  transform: translateY(-50%);
+}
+
+/* Back part of hands - behind the box */
+.mascot-hand-back {
+  z-index: 1;
+  animation: handFloat 6s ease-in-out infinite;
+}
+
+/* Front part of hands (fingers) - in front of the box */
+.mascot-hand-front {
+  z-index: 3;
+  animation: handFloat 6s ease-in-out infinite;
 }
 
 @keyframes handFloat {
   0%, 100% {
-    transform: translateY(-50%) rotate(var(--hand-rotate, 0deg));
+    transform: translateY(calc(-50%));
   }
   50% {
-    transform: translateY(calc(-50% - 8px)) rotate(var(--hand-rotate, 0deg));
+    transform: translateY(calc(-50% - 10px));
   }
-}
-
-.mascot-hand-left {
-  --hand-rotate: -15deg;
-}
-
-.mascot-hand-right {
-  --hand-rotate: 15deg;
 }
 
 @keyframes mascotIdle {
   0%, 100% {
-    transform: translate(-50%, -50%) scale(1);
+    transform: translate(-50%, -100%) scale(1);
   }
   50% {
-    transform: translate(-50%, calc(-50% - 10px)) scale(1);
+    transform: translate(-50%, calc(-100% - 10px)) scale(1);
   }
-}
-
-/* ========================================
-   FLOATING ACTION BUTTONS
-   ======================================== */
-.floating-buttons-container {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 20;
-  display: flex;
-  gap: 60px;
-  pointer-events: none;
-}
-
-.floating-action-btn {
-  width: 90px;
-  height: 90px;
-  border-radius: 50%;
-  border: none;
-  background: linear-gradient(135deg, rgba(20, 20, 20, 0.9) 0%, rgba(40, 40, 40, 0.9) 100%);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  pointer-events: auto;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.4),
-    0 0 0 1px rgba(255, 107, 0, 0.3),
-    inset 0 0 20px rgba(255, 107, 0, 0.1);
-  animation: floatAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) backwards,
-             floatHover 4s ease-in-out infinite;
-}
-
-.floating-btn-1 { animation-delay: 0s, 0.6s; }
-.floating-btn-2 { animation-delay: 0.1s, 0.7s; }
-.floating-btn-3 { animation-delay: 0.2s, 0.8s; }
-.floating-btn-4 { animation-delay: 0.3s, 0.9s; }
-
-@keyframes floatAppear {
-  0% {
-    opacity: 0;
-    transform: scale(0) translateY(50px);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-@keyframes floatHover {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-15px);
-  }
-}
-
-.floating-btn-glow {
-  position: absolute;
-  top: -5px;
-  left: -5px;
-  right: -5px;
-  bottom: -5px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 107, 0, 0.4) 0%, transparent 70%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  animation: glowPulse 3s ease-in-out infinite;
-}
-
-@keyframes glowPulse {
-  0%, 100% { opacity: 0.3; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(1.1); }
-}
-
-.floating-action-btn:hover {
-  transform: translateY(-20px) scale(1.15);
-  box-shadow:
-    0 15px 50px rgba(255, 107, 0, 0.5),
-    0 0 0 2px rgba(255, 107, 0, 0.6),
-    inset 0 0 30px rgba(255, 107, 0, 0.2);
-}
-
-.floating-action-btn:hover .floating-btn-glow {
-  opacity: 1;
-}
-
-.floating-action-btn:active {
-  transform: translateY(-10px) scale(1.05);
-}
-
-.floating-btn-content {
-  color: var(--color-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  filter: drop-shadow(0 0 10px rgba(255, 107, 0, 0.5));
-  z-index: 1;
-}
-
-.floating-action-btn:hover .floating-btn-content {
-  color: white;
-  filter: drop-shadow(0 0 15px rgba(255, 107, 0, 0.8));
-}
-
-/* Typewriter text floating below mascot */
-.typewriter-floating {
-  position: fixed;
-  bottom: 80px;
-  left: 50%;
-  transform: translateX(-50%);
-  text-align: center;
-  z-index: 50;
-}
-
-.typewriter-floating .typewriter-title {
-  font-size: 1.75rem;
-  margin-bottom: 0.5rem;
-}
-
-.typewriter-floating .typewriter-subtitle {
-  font-size: 1rem;
-}
-
-/* Status message floating */
-.floating-status {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 100;
 }
 
 /* Mascot Mouth */
@@ -369,42 +185,15 @@
   }
 }
 
-/* Responsive design for new layout */
+/* Adjust mascot on smaller screens */
 @media (max-width: 1100px) {
+  .mascot-container {
+    top: 2rem;
+    transform: translate(-50%, 0);
+  }
+
   .mascot {
     width: 280px;
-  }
-
-  .mascot-hand {
-    width: 100px;
-  }
-
-  .mascot-hand-left {
-    left: calc(50% - 250px);
-  }
-
-  .mascot-hand-right {
-    right: calc(50% - 250px);
-  }
-
-  .floating-buttons-container {
-    gap: 40px;
-  }
-
-  .floating-action-btn {
-    width: 75px;
-    height: 75px;
-  }
-
-  .floating-btn-content svg {
-    width: 26px;
-    height: 26px;
-  }
-}
-
-@media (max-width: 768px) {
-  .mascot {
-    width: 220px;
   }
 
   .mascot-hand {
@@ -413,50 +202,55 @@
 
   .mascot-hand-left {
     left: calc(50% - 200px);
-    top: calc(50% + 40px);
+    top: calc(2rem + 320px);
   }
 
   .mascot-hand-right {
     right: calc(50% - 200px);
-    top: calc(50% + 40px);
+    top: calc(2rem + 320px);
   }
 
-  .floating-buttons-container {
-    gap: 25px;
+  .app {
+    padding-top: 10rem;
   }
 
-  .floating-action-btn {
-    width: 65px;
-    height: 65px;
+  @keyframes mascotAppear {
+    0% {
+      opacity: 0;
+      transform: translate(-50%, -20%) scale(0.7);
+    }
+    60% {
+      opacity: 1;
+      transform: translate(-50%, 5%) scale(1.05);
+    }
+    100% {
+      opacity: 1;
+      transform: translate(-50%, 0) scale(1);
+    }
   }
 
-  .floating-btn-content svg {
-    width: 24px;
-    height: 24px;
-  }
-
-  .typewriter-floating {
-    bottom: 60px;
-  }
-
-  .typewriter-floating .typewriter-title {
-    font-size: 1.25rem;
-  }
-
-  .typewriter-floating .typewriter-subtitle {
-    font-size: 0.875rem;
-  }
-
-  .logo-corner {
-    font-size: 1rem;
-    top: 16px;
-    left: 16px;
+  @keyframes mascotIdle {
+    0%, 100% {
+      transform: translate(-50%, 0) scale(1);
+    }
+    50% {
+      transform: translate(-50%, -10px) scale(1);
+    }
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
+  .mascot-container {
+    top: 3.25rem;
+    position: absolute;
+  }
+
+  .mascot-hand {
+    position: absolute;
+  }
+
   .mascot {
-    width: 180px;
+    width: 300px;
   }
 
   .mascot-hand {
@@ -464,46 +258,32 @@
   }
 
   .mascot-hand-left {
-    left: calc(50% - 160px);
-    top: calc(50% + 30px);
+    left: calc(50% - 270px);
+    top: calc(10rem + 150px);
   }
 
   .mascot-hand-right {
-    right: calc(50% - 160px);
-    top: calc(50% + 30px);
+    right: calc(50% - 270px);
+    top: calc(10rem + 150px);
   }
 
-  .floating-buttons-container {
-    gap: 15px;
+  .app {
+    padding-top: 10rem;
   }
 
-  .floating-action-btn {
-    width: 55px;
-    height: 55px;
-  }
-
-  .floating-btn-content svg {
-    width: 20px;
-    height: 20px;
-  }
-
-  .typewriter-floating {
-    bottom: 40px;
-    width: 90%;
-  }
-
-  .typewriter-floating .typewriter-title {
-    font-size: 1rem;
-  }
-
-  .typewriter-floating .typewriter-subtitle {
-    font-size: 0.75rem;
+  .container {
+    padding: 1.5rem 1rem;
+    max-width: calc(100% - 80px);
   }
 }
 
-@media (max-width: 380px) {
+@media (max-width: 480px) {
+  .mascot-container {
+    top: 4rem;
+  }
+
   .mascot {
-    width: 150px;
+    width: 240px;
   }
 
   .mascot-hand {
@@ -511,25 +291,74 @@
   }
 
   .mascot-hand-left {
-    left: calc(50% - 130px);
+    left: calc(50% - 200px);
+    top: calc(8rem + 120px);
   }
 
   .mascot-hand-right {
-    right: calc(50% - 130px);
+    right: calc(50% - 200px);
+    top: calc(8rem + 120px);
   }
 
-  .floating-buttons-container {
-    gap: 10px;
+  .app {
+    padding-top: 8rem;
   }
 
-  .floating-action-btn {
-    width: 48px;
-    height: 48px;
+  .container {
+    padding: 1.25rem 0.875rem;
+    max-width: calc(100% - 70px);
   }
 
-  .floating-btn-content svg {
-    width: 18px;
-    height: 18px;
+  .dropzone {
+    padding: 1.5rem 0.75rem;
+    min-height: auto;
+  }
+
+  .upload-icon {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 0.75rem;
+  }
+
+  .dropzone-text {
+    font-size: 0.875rem;
+  }
+
+  .dropzone-hint {
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .mascot-container {
+    top: 3.5rem;
+  }
+
+  .mascot {
+    width: 200px;
+  }
+
+  .mascot-hand {
+    width: 42px;
+  }
+
+  .mascot-hand-left {
+    left: calc(50% - 165px);
+    top: calc(7rem + 100px);
+  }
+
+  .mascot-hand-right {
+    right: calc(50% - 165px);
+    top: calc(7rem + 100px);
+  }
+
+  .app {
+    padding-top: 7rem;
+  }
+
+  .container {
+    padding: 1rem 0.75rem;
+    max-width: calc(100% - 55px);
   }
 }
 /* ======================================== */
