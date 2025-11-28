@@ -443,6 +443,13 @@
   transform: translateX(4px);
 }
 
+/* Platform Icons */
+.platform-icons-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
 /* List View */
 .uploads-list {
   display: grid;

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { ChevronLeft, ChevronRight, Loader2, RefreshCw, X } from 'lucide-react'
+import PlatformIcon from './PlatformIcon'
 import './Calendar.css'
 
 // n8n Webhook URL - this endpoint should return Notion data
@@ -118,9 +119,9 @@ function Calendar({ onClose }) {
 
   const getStatusColor = (status) => {
     const s = status?.toLowerCase() || ''
-    if (s.includes('done')) return '#22c55e'
-    if (s.includes('processing')) return '#f59e0b'
-    if (s.includes('waiting')) return '#3b82f6'
+    if (s.includes('done')) return '#ff6b00'
+    if (s.includes('processing')) return '#ff8533'
+    if (s.includes('waiting')) return '#ff9500'
     if (s.includes('error')) return '#ef4444'
     return '#6b7280'
   }
@@ -134,20 +135,17 @@ function Calendar({ onClose }) {
     return status || 'Unbekannt'
   }
 
-  const getPlatformIcon = (platform) => {
-    switch (platform?.toLowerCase()) {
-      case 'instagram': return '📸'
-      case 'tiktok': return '🎵'
-      case 'youtube': return '▶️'
-      case 'facebook': return '👤'
-      case 'linkedin': return '💼'
-      default: return '📹'
+  const renderPlatformIcons = (platforms, size = 24) => {
+    if (!platforms || platforms.length === 0) {
+      return <PlatformIcon platform="default" size={size} />
     }
-  }
-
-  const getPlatformIcons = (platforms) => {
-    if (!platforms || platforms.length === 0) return '📹'
-    return platforms.map(p => getPlatformIcon(p)).join(' ')
+    return (
+      <div className="platform-icons-row">
+        {platforms.map((p, idx) => (
+          <PlatformIcon key={idx} platform={p} size={size} />
+        ))}
+      </div>
+    )
   }
 
   // Get uploads for a specific day
@@ -250,7 +248,7 @@ function Calendar({ onClose }) {
               onClick={() => setSelectedUpload(upload)}
             >
               <div className="upload-card-header">
-                <span className="upload-platforms">{getPlatformIcons(upload.platforms)}</span>
+                <span className="upload-platforms">{renderPlatformIcons(upload.platforms, 28)}</span>
                 <span
                   className="upload-status"
                   style={{ backgroundColor: getStatusColor(upload.status) }}
@@ -302,7 +300,7 @@ function Calendar({ onClose }) {
                   }}
                 >
                   <div className="day-detail-card-left">
-                    <span className="day-detail-platform">{getPlatformIcons(upload.platforms)}</span>
+                    <span className="day-detail-platform">{renderPlatformIcons(upload.platforms, 32)}</span>
                   </div>
                   <div className="day-detail-card-content">
                     <h4 className="day-detail-name">{displayName}</h4>
@@ -335,7 +333,7 @@ function Calendar({ onClose }) {
           </button>
 
           <div className="detail-header">
-            <span className="detail-platform">{getPlatformIcons(selectedUpload.platforms)}</span>
+            <span className="detail-platform">{renderPlatformIcons(selectedUpload.platforms, 36)}</span>
             <h3>{displayName}</h3>
           </div>
 
