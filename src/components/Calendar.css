@@ -344,6 +344,7 @@
 
 .day-detail-header {
   padding: 24px;
+  padding-right: 60px;
   background: rgba(255, 107, 0, 0.08);
   border-bottom: 1px solid rgba(255, 107, 0, 0.2);
   display: flex;
