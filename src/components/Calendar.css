@@ -233,10 +233,13 @@
 }
 
 .calendar-day {
-  min-height: 80px;
-  padding: 8px;
+  min-height: 90px;
+  padding: 10px;
   border: 1px solid rgba(255, 255, 255, 0.05);
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .calendar-day.empty {
@@ -268,39 +271,176 @@
   font-weight: 500;
 }
 
-.day-uploads {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 8px;
-}
-
-.day-upload-dot {
-  width: 24px;
-  height: 24px;
-  border-radius: 8px;
+.day-upload-badge {
+  margin-top: auto;
+  margin-bottom: auto;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ff6b00 0%, #ff8533 100%);
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow:
+    0 4px 15px rgba(255, 107, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 107, 0, 0.6);
+}
+
+.day-upload-badge:hover {
+  transform: scale(1.1);
+  box-shadow:
+    0 6px 20px rgba(255, 107, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.day-upload-badge:active {
+  transform: scale(0.95);
+}
+
+.badge-count {
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Day Detail Overlay */
+.day-detail-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  padding: 20px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.day-detail-container {
+  background: rgb(10, 10, 10);
+  border-radius: 20px;
+  max-width: 500px;
+  width: 100%;
+  max-height: 80vh;
+  overflow: hidden;
+  position: relative;
+  box-shadow:
+    0 8px 32px rgba(255, 107, 0, 0.3),
+    0 0 0 1px rgba(255, 107, 0, 0.2),
+    inset 0 0 60px rgba(255, 107, 0, 0.05);
+  border: 1px solid rgba(255, 107, 0, 0.3);
+  animation: slideUp 0.3s ease-out;
+  display: flex;
+  flex-direction: column;
+}
+
+.day-detail-header {
+  padding: 24px;
+  background: rgba(255, 107, 0, 0.08);
+  border-bottom: 1px solid rgba(255, 107, 0, 0.2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.day-detail-header h3 {
+  color: #fff;
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.day-detail-count {
+  background: linear-gradient(135deg, #ff6b00 0%, #ff8533 100%);
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 2px 10px rgba(255, 107, 0, 0.4);
+}
+
+.day-detail-list {
+  padding: 16px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.day-detail-card {
+  background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
-.day-upload-dot:hover {
-  transform: scale(1.15);
-  box-shadow: 0 4px 12px rgba(255, 107, 0, 0.4);
-  border-color: rgba(255, 107, 0, 0.5);
+.day-detail-card:hover {
+  background: rgba(255, 107, 0, 0.1);
+  border-color: rgba(255, 107, 0, 0.3);
+  transform: translateX(4px);
 }
 
-.more-uploads {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.7);
-  padding: 4px 8px;
-  background: rgba(255, 107, 0, 0.2);
-  border-radius: 6px;
+.day-detail-card-left {
+  flex-shrink: 0;
+}
+
+.day-detail-platform {
+  font-size: 28px;
+}
+
+.day-detail-card-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.day-detail-name {
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.day-detail-time {
+  color: #ff6b00;
+  font-size: 14px;
   font-weight: 500;
+  display: block;
+}
+
+.day-detail-platforms {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+  display: block;
+  margin-top: 2px;
+}
+
+.day-detail-arrow {
+  color: rgba(255, 255, 255, 0.3);
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.day-detail-card:hover .day-detail-arrow {
+  color: #ff6b00;
+  transform: translateX(4px);
 }
 
 /* List View */

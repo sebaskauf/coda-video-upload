@@ -11,6 +11,7 @@ function Calendar({ onClose }) {
   const [error, setError] = useState(null)
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedUpload, setSelectedUpload] = useState(null)
+  const [selectedDay, setSelectedDay] = useState(null) // For day detail view
   const [viewMode, setViewMode] = useState('calendar') // 'calendar' or 'list'
 
   // Fetch uploads from n8n (which queries Notion)
@@ -201,19 +202,11 @@ function Calendar({ onClose }) {
         >
           <span className="day-number">{day}</span>
           {dayUploads.length > 0 && (
-            <div className="day-uploads">
-              {dayUploads.slice(0, 3).map((upload, idx) => (
-                <div
-                  key={idx}
-                  className="day-upload-dot"
-                  style={{ backgroundColor: getStatusColor(upload.status) }}
-                  onClick={() => setSelectedUpload(upload)}
-                  title={upload.name || upload.video_id}
-                />
-              ))}
-              {dayUploads.length > 3 && (
-                <span className="more-uploads">+{dayUploads.length - 3}</span>
-              )}
+            <div
+              className="day-upload-badge"
+              onClick={() => setSelectedDay({ day, uploads: dayUploads })}
+            >
+              <span className="badge-count">{dayUploads.length}</span>
             </div>
           )}
         </div>
@@ -278,6 +271,52 @@ function Calendar({ onClose }) {
             </div>
           ))
         )}
+      </div>
+    )
+  }
+
+  const renderDayDetail = () => {
+    if (!selectedDay) return null
+
+    return (
+      <div className="day-detail-overlay" onClick={() => setSelectedDay(null)}>
+        <div className="day-detail-container" onClick={e => e.stopPropagation()}>
+          <button className="detail-close" onClick={() => setSelectedDay(null)}>
+            <X size={20} />
+          </button>
+
+          <div className="day-detail-header">
+            <h3>{selectedDay.day}. {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}</h3>
+            <span className="day-detail-count">{selectedDay.uploads.length} {selectedDay.uploads.length === 1 ? 'Post' : 'Posts'}</span>
+          </div>
+
+          <div className="day-detail-list">
+            {selectedDay.uploads.map((upload, idx) => {
+              const displayName = upload.accounts?.[0] || upload.account || 'Unbekannt'
+              return (
+                <div
+                  key={idx}
+                  className="day-detail-card"
+                  onClick={() => {
+                    setSelectedUpload(upload)
+                  }}
+                >
+                  <div className="day-detail-card-left">
+                    <span className="day-detail-platform">{getPlatformIcons(upload.platforms)}</span>
+                  </div>
+                  <div className="day-detail-card-content">
+                    <h4 className="day-detail-name">{displayName}</h4>
+                    <span className="day-detail-time">{formatTime(upload.timestamp)}</span>
+                    {upload.platforms && upload.platforms.length > 0 && (
+                      <span className="day-detail-platforms">{upload.platforms.join(', ')}</span>
+                    )}
+                  </div>
+                  <ChevronRight size={20} className="day-detail-arrow" />
+                </div>
+              )
+            })}
+          </div>
+        </div>
       </div>
     )
   }
@@ -432,6 +471,7 @@ function Calendar({ onClose }) {
         </div>
       </div>
 
+        {selectedDay && renderDayDetail()}
         {selectedUpload && renderUploadDetail()}
       </div>
     </div>
