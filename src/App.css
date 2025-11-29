@@ -259,16 +259,16 @@
 
   .mascot-hand-left {
     left: calc(50% - 270px);
-    top: calc(12rem + 150px);
+    top: calc(14rem + 150px);
   }
 
   .mascot-hand-right {
     right: calc(50% - 270px);
-    top: calc(12rem + 150px);
+    top: calc(14rem + 150px);
   }
 
   .app {
-    padding-top: 12rem;
+    padding-top: 14rem;
   }
 
   .container {
@@ -292,16 +292,16 @@
 
   .mascot-hand-left {
     left: calc(50% - 200px);
-    top: calc(9rem + 120px);
+    top: calc(12rem + 120px);
   }
 
   .mascot-hand-right {
     right: calc(50% - 200px);
-    top: calc(9rem + 120px);
+    top: calc(12rem + 120px);
   }
 
   .app {
-    padding-top: 9rem;
+    padding-top: 12rem;
   }
 
   .container {
@@ -344,16 +344,16 @@
 
   .mascot-hand-left {
     left: calc(50% - 165px);
-    top: calc(8rem + 100px);
+    top: calc(11rem + 100px);
   }
 
   .mascot-hand-right {
     right: calc(50% - 165px);
-    top: calc(8rem + 100px);
+    top: calc(11rem + 100px);
   }
 
   .app {
-    padding-top: 8rem;
+    padding-top: 11rem;
   }
 
   .container {
@@ -378,17 +378,17 @@
 
   .mascot-hand-left {
     left: calc(50% - 140px);
-    top: calc(7rem + 90px);
+    top: calc(10rem + 90px);
   }
 
   .mascot-hand-right {
     right: calc(50% - 140px);
-    top: calc(7rem + 90px);
+    top: calc(10rem + 90px);
   }
 
   .app {
     padding: 0.375rem;
-    padding-top: 8.5rem;
+    padding-top: 10rem;
   }
 
   .container {
