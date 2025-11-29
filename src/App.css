@@ -241,7 +241,7 @@
 
 @media (max-width: 768px) {
   .mascot-container {
-    top: 5rem;
+    top: 6rem;
     position: absolute;
   }
 
@@ -279,7 +279,7 @@
 
 @media (max-width: 480px) {
   .mascot-container {
-    top: 5rem;
+    top: 6rem;
   }
 
   .mascot {
@@ -331,7 +331,7 @@
 
 @media (max-width: 380px) {
   .mascot-container {
-    top: 4.5rem;
+    top: 5.5rem;
   }
 
   .mascot {
@@ -365,7 +365,7 @@
 /* Very small screens (320px - small iPhones, etc.) */
 @media (max-width: 350px) {
   .mascot-container {
-    top: 5.5rem;
+    top: 6rem;
   }
 
   .mascot {
@@ -1423,7 +1423,7 @@ h1 {
 @media (max-width: 768px) {
   .app {
     padding: 0.75rem;
-    padding-top: 14rem;
+    padding-top: 12rem;
     overflow-x: hidden;
   }
 
@@ -1590,7 +1590,7 @@ h1 {
 @media (max-width: 480px) {
   .app {
     padding: 0.5rem;
-    padding-top: 12rem;
+    padding-top: 10rem;
   }
 
   .container {
