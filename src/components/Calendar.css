@@ -729,3 +729,323 @@
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 480px) {
+  .calendar-overlay {
+    padding: 12px;
+  }
+
+  .calendar-container {
+    border-radius: 16px;
+  }
+
+  .calendar-header {
+    padding: 16px;
+  }
+
+  .calendar-title h2 {
+    font-size: 20px;
+  }
+
+  .view-toggle button {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+
+  .current-month {
+    font-size: 14px;
+    min-width: 130px;
+  }
+
+  .calendar-body {
+    padding: 16px;
+  }
+
+  .weekday {
+    padding: 8px 4px;
+    font-size: 12px;
+  }
+
+  .calendar-day {
+    min-height: 70px;
+    padding: 6px;
+  }
+
+  .day-number {
+    font-size: 12px;
+    width: 24px;
+    height: 24px;
+  }
+
+  .day-upload-badge {
+    width: 36px;
+    height: 36px;
+    margin-top: 8px;
+    border-radius: 10px;
+  }
+
+  .badge-count {
+    font-size: 14px;
+  }
+
+  .calendar-stats {
+    padding: 16px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .stat-value {
+    font-size: 18px;
+  }
+
+  .stat-label {
+    font-size: 11px;
+  }
+
+  .day-detail-overlay {
+    padding: 12px;
+  }
+
+  .day-detail-container {
+    border-radius: 16px;
+  }
+
+  .day-detail-header {
+    padding: 16px;
+    padding-right: 50px;
+  }
+
+  .day-detail-header h3 {
+    font-size: 16px;
+  }
+
+  .day-detail-list {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .day-detail-card {
+    padding: 12px;
+    gap: 12px;
+    border-radius: 12px;
+  }
+
+  .day-detail-name {
+    font-size: 14px;
+  }
+
+  .day-detail-time {
+    font-size: 13px;
+  }
+
+  .upload-detail {
+    border-radius: 16px;
+  }
+
+  .detail-header {
+    padding: 16px;
+  }
+
+  .detail-platform {
+    font-size: 28px;
+  }
+
+  .detail-header h3 {
+    font-size: 16px;
+  }
+
+  .detail-body {
+    padding: 16px;
+  }
+
+  .detail-row {
+    padding: 10px 12px;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-start;
+  }
+
+  .detail-value {
+    text-align: left;
+  }
+}
+
+/* Very small screens */
+@media (max-width: 350px) {
+  .calendar-overlay {
+    padding: 8px;
+  }
+
+  .calendar-container {
+    border-radius: 12px;
+  }
+
+  .calendar-header {
+    padding: 12px;
+  }
+
+  .calendar-title {
+    margin-bottom: 12px;
+  }
+
+  .calendar-title h2 {
+    font-size: 18px;
+  }
+
+  .view-toggle {
+    padding: 2px;
+  }
+
+  .view-toggle button {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+
+  .month-nav {
+    gap: 8px;
+  }
+
+  .month-nav button {
+    padding: 6px;
+  }
+
+  .current-month {
+    font-size: 13px;
+    min-width: 110px;
+  }
+
+  .calendar-body {
+    padding: 12px;
+  }
+
+  .weekday {
+    padding: 6px 2px;
+    font-size: 10px;
+  }
+
+  .calendar-day {
+    min-height: 55px;
+    padding: 4px;
+  }
+
+  .day-number {
+    font-size: 11px;
+    width: 20px;
+    height: 20px;
+  }
+
+  .calendar-day.today .day-number {
+    width: 22px;
+    height: 22px;
+  }
+
+  .day-upload-badge {
+    width: 28px;
+    height: 28px;
+    margin-top: 4px;
+    border-radius: 8px;
+  }
+
+  .badge-count {
+    font-size: 12px;
+  }
+
+  .calendar-stats {
+    padding: 12px;
+    gap: 8px;
+  }
+
+  .stat-value {
+    font-size: 16px;
+  }
+
+  .stat-label {
+    font-size: 10px;
+  }
+
+  .day-detail-overlay {
+    padding: 8px;
+  }
+
+  .day-detail-container {
+    border-radius: 12px;
+  }
+
+  .day-detail-header {
+    padding: 12px;
+    padding-right: 44px;
+  }
+
+  .day-detail-header h3 {
+    font-size: 15px;
+  }
+
+  .day-detail-count {
+    padding: 4px 10px;
+    font-size: 12px;
+  }
+
+  .day-detail-list {
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .day-detail-card {
+    padding: 10px;
+    gap: 10px;
+    border-radius: 10px;
+  }
+
+  .day-detail-platform {
+    font-size: 24px;
+  }
+
+  .day-detail-name {
+    font-size: 13px;
+  }
+
+  .day-detail-time {
+    font-size: 12px;
+  }
+
+  .day-detail-platforms {
+    font-size: 11px;
+  }
+
+  .upload-detail {
+    border-radius: 12px;
+  }
+
+  .detail-header {
+    padding: 14px;
+  }
+
+  .detail-platform {
+    font-size: 24px;
+  }
+
+  .detail-header h3 {
+    font-size: 15px;
+  }
+
+  .detail-body {
+    padding: 14px;
+  }
+
+  .detail-row {
+    padding: 8px 10px;
+  }
+
+  .detail-label {
+    font-size: 13px;
+  }
+
+  .detail-value {
+    font-size: 13px;
+  }
+
+  .detail-video-link {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+}

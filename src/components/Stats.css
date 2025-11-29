@@ -354,3 +354,200 @@
     min-width: 100px;
   }
 }
+
+@media (max-width: 480px) {
+  .stats-overlay {
+    padding: 12px;
+  }
+
+  .stats-container {
+    border-radius: 16px;
+  }
+
+  .stats-header {
+    padding: 16px;
+  }
+
+  .stats-title h2 {
+    font-size: 20px;
+  }
+
+  .stats-body {
+    padding: 16px;
+  }
+
+  .summary-card {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .summary-value {
+    font-size: 24px;
+  }
+
+  .summary-label {
+    font-size: 11px;
+  }
+
+  .customer-row {
+    padding: 10px 12px;
+  }
+
+  .customer-rank {
+    font-size: 13px;
+    min-width: 28px;
+  }
+
+  .customer-name {
+    font-size: 14px;
+  }
+
+  .customer-accounts {
+    font-size: 11px;
+  }
+
+  .count-value {
+    font-size: 18px;
+  }
+
+  .platform-row {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .platform-info {
+    min-width: 90px;
+  }
+
+  .platform-bar-container {
+    order: 3;
+    width: 100%;
+    height: 6px;
+  }
+
+  .platform-name {
+    font-size: 13px;
+  }
+
+  .platform-count,
+  .platform-percent {
+    font-size: 13px;
+  }
+}
+
+/* Very small screens */
+@media (max-width: 350px) {
+  .stats-overlay {
+    padding: 8px;
+  }
+
+  .stats-container {
+    border-radius: 12px;
+  }
+
+  .stats-header {
+    padding: 12px;
+  }
+
+  .stats-title h2 {
+    font-size: 18px;
+  }
+
+  .stats-title svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .stats-refresh,
+  .stats-close {
+    padding: 6px;
+  }
+
+  .stats-body {
+    padding: 12px;
+  }
+
+  .summary-card {
+    padding: 14px;
+    gap: 10px;
+    border-radius: 10px;
+  }
+
+  .summary-card svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .summary-value {
+    font-size: 22px;
+  }
+
+  .summary-label {
+    font-size: 10px;
+  }
+
+  .stats-section {
+    margin-bottom: 20px;
+  }
+
+  .stats-section h3 {
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+
+  .customer-row {
+    padding: 8px 10px;
+    gap: 10px;
+  }
+
+  .customer-rank {
+    font-size: 12px;
+    min-width: 24px;
+  }
+
+  .customer-name {
+    font-size: 13px;
+  }
+
+  .customer-accounts {
+    font-size: 10px;
+  }
+
+  .customer-platforms {
+    font-size: 14px;
+  }
+
+  .customer-count {
+    min-width: 50px;
+  }
+
+  .count-value {
+    font-size: 16px;
+  }
+
+  .count-label {
+    font-size: 10px;
+  }
+
+  .platform-info {
+    min-width: 80px;
+    gap: 6px;
+  }
+
+  .platform-icon {
+    font-size: 18px;
+  }
+
+  .platform-name {
+    font-size: 12px;
+  }
+
+  .platform-count,
+  .platform-percent {
+    font-size: 12px;
+  }
+
+  .platform-stats {
+    min-width: 70px;
+  }
+}
