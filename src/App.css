@@ -1423,7 +1423,7 @@ h1 {
 @media (max-width: 768px) {
   .app {
     padding: 0.75rem;
-    padding-top: 10rem;
+    padding-top: 14rem;
     overflow-x: hidden;
   }
 
@@ -1590,7 +1590,7 @@ h1 {
 @media (max-width: 480px) {
   .app {
     padding: 0.5rem;
-    padding-top: 8rem;
+    padding-top: 12rem;
   }
 
   .container {
