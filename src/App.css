@@ -241,7 +241,7 @@
 
 @media (max-width: 768px) {
   .mascot-container {
-    top: 6rem;
+    top: 6.5rem;
     position: absolute;
   }
 
@@ -279,7 +279,7 @@
 
 @media (max-width: 480px) {
   .mascot-container {
-    top: 6rem;
+    top: 6.5rem;
   }
 
   .mascot {
@@ -331,7 +331,7 @@
 
 @media (max-width: 380px) {
   .mascot-container {
-    top: 5.5rem;
+    top: 6rem;
   }
 
   .mascot {
@@ -365,7 +365,7 @@
 /* Very small screens (320px - small iPhones, etc.) */
 @media (max-width: 350px) {
   .mascot-container {
-    top: 6rem;
+    top: 6.5rem;
   }
 
   .mascot {
