@@ -1,7 +1,7 @@
 .app {
   min-height: 100vh;
   padding: 2rem;
-  padding-top: 14rem;
+  padding-top: 22rem;
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -51,7 +51,7 @@
    ======================================== */
 .mascot-container {
   position: fixed;
-  top: 15rem;
+  top: 23rem;
   left: 50%;
   transform: translate(-50%, -100%);
   z-index: 1;
@@ -94,13 +94,13 @@
 
 .mascot-hand-left {
   left: calc(50% - 480px);
-  top: calc(14rem + 280px);
+  top: calc(22rem + 280px);
   transform: translateY(-50%);
 }
 
 .mascot-hand-right {
   right: calc(50% - 480px);
-  top: calc(14rem + 280px);
+  top: calc(22rem + 280px);
   transform: translateY(-50%);
 }
 
@@ -188,7 +188,7 @@
 /* Adjust mascot on smaller screens */
 @media (max-width: 1100px) {
   .mascot-container {
-    top: 4rem;
+    top: 10rem;
     transform: translate(-50%, 0);
   }
 
@@ -202,16 +202,16 @@
 
   .mascot-hand-left {
     left: calc(50% - 200px);
-    top: calc(4rem + 320px);
+    top: calc(10rem + 320px);
   }
 
   .mascot-hand-right {
     right: calc(50% - 200px);
-    top: calc(4rem + 320px);
+    top: calc(10rem + 320px);
   }
 
   .app {
-    padding-top: 12rem;
+    padding-top: 18rem;
   }
 
   @keyframes mascotAppear {
@@ -241,7 +241,7 @@
 
 @media (max-width: 768px) {
   .mascot-container {
-    top: 5.25rem;
+    top: 9rem;
     position: absolute;
   }
 
@@ -259,16 +259,16 @@
 
   .mascot-hand-left {
     left: calc(50% - 270px);
-    top: calc(12rem + 150px);
+    top: calc(16rem + 150px);
   }
 
   .mascot-hand-right {
     right: calc(50% - 270px);
-    top: calc(12rem + 150px);
+    top: calc(16rem + 150px);
   }
 
   .app {
-    padding-top: 12rem;
+    padding-top: 16rem;
   }
 
   .container {
@@ -279,7 +279,7 @@
 
 @media (max-width: 480px) {
   .mascot-container {
-    top: 6rem;
+    top: 10rem;
   }
 
   .mascot {
@@ -292,16 +292,16 @@
 
   .mascot-hand-left {
     left: calc(50% - 200px);
-    top: calc(10rem + 120px);
+    top: calc(14rem + 120px);
   }
 
   .mascot-hand-right {
     right: calc(50% - 200px);
-    top: calc(10rem + 120px);
+    top: calc(14rem + 120px);
   }
 
   .app {
-    padding-top: 10rem;
+    padding-top: 14rem;
   }
 
   .container {
@@ -331,7 +331,7 @@
 
 @media (max-width: 380px) {
   .mascot-container {
-    top: 5.5rem;
+    top: 9.5rem;
   }
 
   .mascot {
@@ -344,16 +344,16 @@
 
   .mascot-hand-left {
     left: calc(50% - 165px);
-    top: calc(9rem + 100px);
+    top: calc(13rem + 100px);
   }
 
   .mascot-hand-right {
     right: calc(50% - 165px);
-    top: calc(9rem + 100px);
+    top: calc(13rem + 100px);
   }
 
   .app {
-    padding-top: 9rem;
+    padding-top: 13rem;
   }
 
   .container {
@@ -365,7 +365,7 @@
 /* Very small screens (320px - small iPhones, etc.) */
 @media (max-width: 350px) {
   .mascot-container {
-    top: 6.5rem;
+    top: 10.5rem;
   }
 
   .mascot {
@@ -378,17 +378,17 @@
 
   .mascot-hand-left {
     left: calc(50% - 140px);
-    top: calc(8rem + 90px);
+    top: calc(12rem + 90px);
   }
 
   .mascot-hand-right {
     right: calc(50% - 140px);
-    top: calc(8rem + 90px);
+    top: calc(12rem + 90px);
   }
 
   .app {
     padding: 0.375rem;
-    padding-top: 9.5rem;
+    padding-top: 13.5rem;
   }
 
   .container {
