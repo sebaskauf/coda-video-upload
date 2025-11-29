@@ -373,17 +373,17 @@
   }
 
   .mascot-hand {
-    width: 30px;
+    width: 35px;
   }
 
   .mascot-hand-left {
-    left: calc(50% - 120px);
-    top: calc(7.5rem + 80px);
+    left: calc(50% - 140px);
+    top: calc(6rem + 90px);
   }
 
   .mascot-hand-right {
-    right: calc(50% - 120px);
-    top: calc(7.5rem + 80px);
+    right: calc(50% - 140px);
+    top: calc(6rem + 90px);
   }
 
   .app {
@@ -393,7 +393,7 @@
 
   .container {
     padding: 0.875rem 0.625rem;
-    max-width: calc(100% - 30px);
+    max-width: calc(100% - 55px);
     border-radius: 10px;
   }
 }
@@ -1735,29 +1735,36 @@ h1 {
   }
 
   .logo {
-    font-size: 1rem;
+    font-size: 0.875rem;
+    letter-spacing: 0.02em;
+  }
+
+  .logo-header-row {
+    margin-bottom: 0.375rem;
+    padding: 0 0.25rem;
   }
 
   .header-buttons {
-    gap: 4px;
+    gap: 3px;
+    margin-right: -0.25rem;
   }
 
   .calendar-fab,
   .stats-fab {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
   }
 
   .calendar-fab svg,
   .stats-fab svg {
-    width: 14px;
-    height: 14px;
+    width: 13px;
+    height: 13px;
   }
 
   .chat-fab {
-    width: 36px;
-    height: 36px;
-    font-size: 1rem;
+    width: 32px;
+    height: 32px;
+    font-size: 0.875rem;
   }
 
   .dropzone {
@@ -1777,10 +1784,6 @@ h1 {
 
   .header {
     margin-bottom: 0.75rem;
-  }
-
-  .logo-header-row {
-    margin-bottom: 0.375rem;
   }
 }
 
