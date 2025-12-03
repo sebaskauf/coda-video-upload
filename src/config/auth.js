@@ -3,7 +3,7 @@
 // ===========================================
 
 // Passwort für den Login (einfach hier ändern)
-export const AUTH_PASSWORD = 'coda2025%';
+export const AUTH_PASSWORD = 'dml2025%';
 
 // Optional: Benutzername aktivieren (true/false)
 export const REQUIRE_USERNAME = false;
