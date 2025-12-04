@@ -169,7 +169,8 @@ function ChatWindow({
   chatMessages = [],
   setChatMessages = () => {},
   readyToPost = false,
-  setReadyToPost = () => {}
+  setReadyToPost = () => {},
+  shouldCelebrate = false
 }) {
   const [inputValue, setInputValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -183,7 +184,6 @@ function ChatWindow({
   const [isThinking, setIsThinking] = useState(false)
   const [isWorking, setIsWorking] = useState(false) // For laptop typing animation
   const [isCelebrating, setIsCelebrating] = useState(false) // For thumbs-up celebration
-  const celebrationTimeoutRef = useRef(null)
   const messagesEndRef = useRef(null)
   const textareaRef = useRef(null)
   const streamingIntervalRef = useRef(null)
@@ -205,6 +205,17 @@ function ChatWindow({
       setIsWorking(true)
     }
   }, [readyToPost])
+
+  // Trigger celebration when shouldCelebrate prop becomes true
+  useEffect(() => {
+    if (shouldCelebrate) {
+      console.log('[ChatWindow] shouldCelebrate triggered! Starting celebration animation')
+      setIsWorking(false)
+      setIsCelebrating(true)
+    } else {
+      setIsCelebrating(false)
+    }
+  }, [shouldCelebrate])
 
   // Format file size
   const formatFileSize = (bytes) => {
@@ -285,7 +296,7 @@ function ChatWindow({
     setIsListening(inputValue.length > 0)
   }, [inputValue])
 
-  // Cleanup streaming interval, abort controller, and celebration timeout on unmount
+  // Cleanup streaming interval and abort controller on unmount
   useEffect(() => {
     return () => {
       if (streamingIntervalRef.current) {
@@ -294,34 +305,8 @@ function ChatWindow({
       if (abortControllerRef.current) {
         abortControllerRef.current.abort()
       }
-      if (celebrationTimeoutRef.current) {
-        clearTimeout(celebrationTimeoutRef.current)
-      }
     }
   }, [])
-
-  // Start celebration animation
-  const startCelebration = () => {
-    setIsWorking(false)
-    setIsCelebrating(true)
-
-    // Return to normal state after 3 seconds
-    celebrationTimeoutRef.current = setTimeout(() => {
-      setIsCelebrating(false)
-    }, 3000)
-  }
-
-  // Check if message indicates successful upload completion
-  const checkForSuccessMessage = (text) => {
-    // Only trigger on FINAL success messages containing "Erledigt" AND "gepostet"
-    const hasErledigt = /erledigt/i.test(text)
-    const hasGepostet = /gepostet/i.test(text)
-    const isSuccess = hasErledigt && hasGepostet
-
-    console.log('[Celebration Check]', { text: text.substring(0, 50), hasErledigt, hasGepostet, isSuccess })
-
-    return isSuccess
-  }
 
   // Stop generation function
   const handleStopGeneration = () => {
@@ -386,11 +371,6 @@ function ChatWindow({
         }
         setChatMessages(prev => [...prev, assistantMessage])
         setStreamingText('')
-
-        // Check if this is a success message and trigger celebration
-        if (checkForSuccessMessage(text)) {
-          startCelebration()
-        }
       }
     }, speed)
   }

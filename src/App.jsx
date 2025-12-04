@@ -59,6 +59,7 @@ function App() {
   const [uploads, setUploads] = useState([])
   const [activeUploadId, setActiveUploadId] = useState(null) // Which upload's chat is open
   const [generalChatMessages, setGeneralChatMessages] = useState([]) // For chat without upload
+  const [celebratingUploadId, setCelebratingUploadId] = useState(null) // Which upload is celebrating
 
   // Abort controllers for each upload
   const abortControllersRef = useRef({})
@@ -143,6 +144,18 @@ function App() {
             }
           ]
         })
+
+        // Check if response indicates success and trigger celebration
+        const responseText = data.response.toLowerCase()
+        if (responseText.includes('erledigt') && responseText.includes('gepostet')) {
+          console.log('[App] Success message detected! Triggering celebration for:', uploadId)
+          setCelebratingUploadId(uploadId)
+
+          // Reset celebration after 3 seconds
+          setTimeout(() => {
+            setCelebratingUploadId(null)
+          }, 3000)
+        }
       }
     } catch (error) {
       console.error('[App] Auto-post trigger error:', error)
@@ -452,6 +465,7 @@ function App() {
           setReadyToPost={setActiveReadyToPost}
           onCancelUpload={() => cancelUpload(activeUploadId)}
           canCancel={activeUpload.state === 'uploading'}
+          shouldCelebrate={celebratingUploadId === activeUploadId}
         />
       )}
 
