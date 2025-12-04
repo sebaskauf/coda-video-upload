@@ -313,15 +313,14 @@ function ChatWindow({
 
   // Check if message indicates successful upload completion
   const checkForSuccessMessage = (text) => {
-    // Only trigger on FINAL success messages - must start with "Erledigt" or similar
-    const successPatterns = [
-      /^erledigt/i,                    // Message starts with "Erledigt"
-      /^✅\s*erledigt/i,               // Message starts with ✅ Erledigt
-      /video wurde gepostet/i,         // Specific "video wurde gepostet"
-      /wurde erfolgreich gepostet/i,   // "wurde erfolgreich gepostet"
-      /erfolgreich veröffentlicht/i    // "erfolgreich veröffentlicht"
-    ]
-    return successPatterns.some(pattern => pattern.test(text))
+    // Only trigger on FINAL success messages containing "Erledigt" AND "gepostet"
+    const hasErledigt = /erledigt/i.test(text)
+    const hasGepostet = /gepostet/i.test(text)
+    const isSuccess = hasErledigt && hasGepostet
+
+    console.log('[Celebration Check]', { text: text.substring(0, 50), hasErledigt, hasGepostet, isSuccess })
+
+    return isSuccess
   }
 
   // Stop generation function
