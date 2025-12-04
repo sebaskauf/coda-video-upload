@@ -1077,12 +1077,12 @@
   }
 }
 
-/* Thumbs up container */
+/* Thumbs up container - positioned on the LEFT side (away from chat window) */
 .mascot-thumbsup {
   position: absolute;
   width: 70px;
   height: auto;
-  right: -60px;
+  left: -60px;
   top: 40px;
   animation: thumbsUpAppear 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
   filter: drop-shadow(0 5px 20px rgba(255, 107, 0, 0.6));
@@ -1202,7 +1202,7 @@
 @media (max-width: 900px) {
   .mascot-thumbsup {
     width: 50px;
-    right: -40px;
+    left: -40px;
     top: 30px;
   }
 }
@@ -1210,7 +1210,7 @@
 @media (max-width: 480px) {
   .mascot-thumbsup {
     width: 40px;
-    right: -30px;
+    left: -30px;
     top: 25px;
   }
 }
@@ -1219,7 +1219,7 @@
 @media (max-width: 350px) {
   .mascot-thumbsup {
     width: 30px;
-    right: -22px;
+    left: -22px;
     top: 20px;
   }
 }

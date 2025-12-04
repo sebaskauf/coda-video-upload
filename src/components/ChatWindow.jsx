@@ -13,7 +13,7 @@ const ChatMascot = ({ mouthOpen, isListening, isThinking, isWorking, isCelebrati
 
   return (
     <div className={`chat-mascot ${stateClass}`}>
-      {/* Thumbs up appears when celebrating */}
+      {/* Thumbs up appears when celebrating - on the RIGHT side */}
       {isCelebrating && (
         <div className="mascot-thumbsup">
           <svg viewBox="0 0 80 100" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -21,10 +21,10 @@ const ChatMascot = ({ mouthOpen, isListening, isThinking, isWorking, isCelebrati
             <ellipse cx="40" cy="75" rx="18" ry="30" fill="url(#thumbsUpArmGradient)" />
             {/* Thumb */}
             <ellipse cx="40" cy="25" rx="14" ry="28" fill="url(#thumbsUpThumbGradient)" />
-            {/* Fist fingers */}
-            <ellipse cx="25" cy="55" rx="10" ry="8" fill="url(#thumbsUpFingerGradient)" />
-            <ellipse cx="30" cy="65" rx="10" ry="7" fill="url(#thumbsUpFingerGradient)" />
-            <ellipse cx="35" cy="73" rx="9" ry="6" fill="url(#thumbsUpFingerGradient)" />
+            {/* Fist fingers - mirrored for right hand */}
+            <ellipse cx="55" cy="55" rx="10" ry="8" fill="url(#thumbsUpFingerGradient)" />
+            <ellipse cx="50" cy="65" rx="10" ry="7" fill="url(#thumbsUpFingerGradient)" />
+            <ellipse cx="45" cy="73" rx="9" ry="6" fill="url(#thumbsUpFingerGradient)" />
             <ellipse cx="40" cy="78" rx="8" ry="5" fill="url(#thumbsUpFingerGradient)" />
             {/* Sparkles around thumb */}
             <circle cx="15" cy="20" r="4" fill="#FFD700" className="sparkle sparkle-1" />
@@ -311,16 +311,15 @@ function ChatWindow({
     }, 3000)
   }
 
-  // Check if message indicates successful upload
+  // Check if message indicates successful upload completion
   const checkForSuccessMessage = (text) => {
+    // Only trigger on FINAL success messages - must start with "Erledigt" or similar
     const successPatterns = [
-      /erledigt/i,
-      /gepostet/i,
-      /erfolgreich.*veröffentlicht/i,
-      /video.*hochgeladen/i,
-      /upload.*abgeschlossen/i,
-      /wurde.*gepostet/i,
-      /veröffentlichung.*erfolgreich/i
+      /^erledigt/i,                    // Message starts with "Erledigt"
+      /^✅\s*erledigt/i,               // Message starts with ✅ Erledigt
+      /video wurde gepostet/i,         // Specific "video wurde gepostet"
+      /wurde erfolgreich gepostet/i,   // "wurde erfolgreich gepostet"
+      /erfolgreich veröffentlicht/i    // "erfolgreich veröffentlicht"
     ]
     return successPatterns.some(pattern => pattern.test(text))
   }
