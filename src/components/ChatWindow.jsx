@@ -3,17 +3,55 @@ import { Send, Loader2, X, Square } from 'lucide-react'
 import './ChatWindow.css'
 
 // Chat Mascot Component
-const ChatMascot = ({ mouthOpen, isListening, isThinking, isWorking }) => {
+const ChatMascot = ({ mouthOpen, isListening, isThinking, isWorking, isCelebrating }) => {
   // Determine mascot state class
   let stateClass = ''
-  if (isWorking) stateClass = 'working'
+  if (isCelebrating) stateClass = 'celebrating'
+  else if (isWorking) stateClass = 'working'
   else if (isListening) stateClass = 'listening'
   else if (isThinking) stateClass = 'thinking'
 
   return (
     <div className={`chat-mascot ${stateClass}`}>
+      {/* Thumbs up appears when celebrating */}
+      {isCelebrating && (
+        <div className="mascot-thumbsup">
+          <svg viewBox="0 0 80 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            {/* Arm */}
+            <ellipse cx="40" cy="75" rx="18" ry="30" fill="url(#thumbsUpArmGradient)" />
+            {/* Thumb */}
+            <ellipse cx="40" cy="25" rx="14" ry="28" fill="url(#thumbsUpThumbGradient)" />
+            {/* Fist fingers */}
+            <ellipse cx="25" cy="55" rx="10" ry="8" fill="url(#thumbsUpFingerGradient)" />
+            <ellipse cx="30" cy="65" rx="10" ry="7" fill="url(#thumbsUpFingerGradient)" />
+            <ellipse cx="35" cy="73" rx="9" ry="6" fill="url(#thumbsUpFingerGradient)" />
+            <ellipse cx="40" cy="78" rx="8" ry="5" fill="url(#thumbsUpFingerGradient)" />
+            {/* Sparkles around thumb */}
+            <circle cx="15" cy="20" r="4" fill="#FFD700" className="sparkle sparkle-1" />
+            <circle cx="65" cy="15" r="3" fill="#FFD700" className="sparkle sparkle-2" />
+            <circle cx="60" cy="40" r="3.5" fill="#FFD700" className="sparkle sparkle-3" />
+            <circle cx="20" cy="45" r="2.5" fill="#FFD700" className="sparkle sparkle-4" />
+            <defs>
+              <linearGradient id="thumbsUpArmGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#ff6b00" />
+                <stop offset="100%" stopColor="#ff8533" />
+              </linearGradient>
+              <linearGradient id="thumbsUpThumbGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#ff8533" />
+                <stop offset="100%" stopColor="#ff6b00" />
+              </linearGradient>
+              <linearGradient id="thumbsUpFingerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#ff6b00" />
+                <stop offset="50%" stopColor="#ff8533" />
+                <stop offset="100%" stopColor="#ff6b00" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+      )}
+
       {/* Laptop appears when working */}
-      {isWorking && (
+      {isWorking && !isCelebrating && (
         <div className="mascot-laptop">
           <svg viewBox="0 0 120 80" fill="none" xmlns="http://www.w3.org/2000/svg">
             {/* Laptop screen */}
@@ -144,6 +182,8 @@ function ChatWindow({
   const [isListening, setIsListening] = useState(false)
   const [isThinking, setIsThinking] = useState(false)
   const [isWorking, setIsWorking] = useState(false) // For laptop typing animation
+  const [isCelebrating, setIsCelebrating] = useState(false) // For thumbs-up celebration
+  const celebrationTimeoutRef = useRef(null)
   const messagesEndRef = useRef(null)
   const textareaRef = useRef(null)
   const streamingIntervalRef = useRef(null)
@@ -245,7 +285,7 @@ function ChatWindow({
     setIsListening(inputValue.length > 0)
   }, [inputValue])
 
-  // Cleanup streaming interval and abort controller on unmount
+  // Cleanup streaming interval, abort controller, and celebration timeout on unmount
   useEffect(() => {
     return () => {
       if (streamingIntervalRef.current) {
@@ -254,8 +294,36 @@ function ChatWindow({
       if (abortControllerRef.current) {
         abortControllerRef.current.abort()
       }
+      if (celebrationTimeoutRef.current) {
+        clearTimeout(celebrationTimeoutRef.current)
+      }
     }
   }, [])
+
+  // Start celebration animation
+  const startCelebration = () => {
+    setIsWorking(false)
+    setIsCelebrating(true)
+
+    // Return to normal state after 3 seconds
+    celebrationTimeoutRef.current = setTimeout(() => {
+      setIsCelebrating(false)
+    }, 3000)
+  }
+
+  // Check if message indicates successful upload
+  const checkForSuccessMessage = (text) => {
+    const successPatterns = [
+      /erledigt/i,
+      /gepostet/i,
+      /erfolgreich.*veröffentlicht/i,
+      /video.*hochgeladen/i,
+      /upload.*abgeschlossen/i,
+      /wurde.*gepostet/i,
+      /veröffentlichung.*erfolgreich/i
+    ]
+    return successPatterns.some(pattern => pattern.test(text))
+  }
 
   // Stop generation function
   const handleStopGeneration = () => {
@@ -320,6 +388,11 @@ function ChatWindow({
         }
         setChatMessages(prev => [...prev, assistantMessage])
         setStreamingText('')
+
+        // Check if this is a success message and trigger celebration
+        if (checkForSuccessMessage(text)) {
+          startCelebration()
+        }
       }
     }, speed)
   }
@@ -420,7 +493,7 @@ function ChatWindow({
 
   return (
     <div className="chat-overlay">
-      <ChatMascot mouthOpen={mouthOpen} isListening={isListening} isThinking={isThinking} isWorking={isWorking} />
+      <ChatMascot mouthOpen={mouthOpen} isListening={isListening} isThinking={isThinking} isWorking={isWorking} isCelebrating={isCelebrating} />
 
       <div className="chat-window">
         <div className="chat-header">
