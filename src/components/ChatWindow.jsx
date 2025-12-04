@@ -13,43 +13,6 @@ const ChatMascot = ({ mouthOpen, isListening, isThinking, isWorking, isCelebrati
 
   return (
     <div className={`chat-mascot ${stateClass}`}>
-      {/* Thumbs up appears when celebrating - on the RIGHT side */}
-      {isCelebrating && (
-        <div className="mascot-thumbsup">
-          <svg viewBox="0 0 80 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-            {/* Arm */}
-            <ellipse cx="40" cy="75" rx="18" ry="30" fill="url(#thumbsUpArmGradient)" />
-            {/* Thumb */}
-            <ellipse cx="40" cy="25" rx="14" ry="28" fill="url(#thumbsUpThumbGradient)" />
-            {/* Fist fingers - mirrored for right hand */}
-            <ellipse cx="55" cy="55" rx="10" ry="8" fill="url(#thumbsUpFingerGradient)" />
-            <ellipse cx="50" cy="65" rx="10" ry="7" fill="url(#thumbsUpFingerGradient)" />
-            <ellipse cx="45" cy="73" rx="9" ry="6" fill="url(#thumbsUpFingerGradient)" />
-            <ellipse cx="40" cy="78" rx="8" ry="5" fill="url(#thumbsUpFingerGradient)" />
-            {/* Sparkles around thumb */}
-            <circle cx="15" cy="20" r="4" fill="#FFD700" className="sparkle sparkle-1" />
-            <circle cx="65" cy="15" r="3" fill="#FFD700" className="sparkle sparkle-2" />
-            <circle cx="60" cy="40" r="3.5" fill="#FFD700" className="sparkle sparkle-3" />
-            <circle cx="20" cy="45" r="2.5" fill="#FFD700" className="sparkle sparkle-4" />
-            <defs>
-              <linearGradient id="thumbsUpArmGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#ff6b00" />
-                <stop offset="100%" stopColor="#ff8533" />
-              </linearGradient>
-              <linearGradient id="thumbsUpThumbGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#ff8533" />
-                <stop offset="100%" stopColor="#ff6b00" />
-              </linearGradient>
-              <linearGradient id="thumbsUpFingerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#ff6b00" />
-                <stop offset="50%" stopColor="#ff8533" />
-                <stop offset="100%" stopColor="#ff6b00" />
-              </linearGradient>
-            </defs>
-          </svg>
-        </div>
-      )}
-
       {/* Laptop appears when working */}
       {isWorking && !isCelebrating && (
         <div className="mascot-laptop">

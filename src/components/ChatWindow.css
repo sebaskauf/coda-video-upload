@@ -1054,172 +1054,67 @@
 }
 
 /* =====================================================
-   CELEBRATION STATE - Thumbs Up Animation
+   CELEBRATION STATE - Dance Animation
    ===================================================== */
 
-/* Celebrating state - happy bounce */
+/* Celebrating state - happy dance */
 .chat-mascot.celebrating {
-  animation: mascotCelebrate 0.6s ease-in-out infinite;
+  animation: mascotDance 0.5s ease-in-out infinite;
 }
 
-@keyframes mascotCelebrate {
+@keyframes mascotDance {
   0%, 100% {
-    transform: translateY(0) scale(1);
-  }
-  25% {
-    transform: translateY(-15px) scale(1.05);
-  }
-  50% {
-    transform: translateY(-8px) scale(1.02);
-  }
-  75% {
-    transform: translateY(-12px) scale(1.04);
-  }
-}
-
-/* Thumbs up container - positioned on the LEFT side (away from chat window) */
-.mascot-thumbsup {
-  position: absolute;
-  width: 70px;
-  height: auto;
-  left: -60px;
-  top: 40px;
-  animation: thumbsUpAppear 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-  filter: drop-shadow(0 5px 20px rgba(255, 107, 0, 0.6));
-}
-
-@keyframes thumbsUpAppear {
-  0% {
-    opacity: 0;
-    transform: translateY(30px) rotate(-30deg) scale(0.3);
-  }
-  50% {
-    opacity: 1;
-    transform: translateY(-10px) rotate(10deg) scale(1.1);
-  }
-  100% {
-    opacity: 1;
     transform: translateY(0) rotate(0deg) scale(1);
-    animation: thumbsUpBounce 0.8s ease-in-out infinite;
-  }
-}
-
-.mascot-thumbsup svg {
-  animation: thumbsUpBounce 0.8s ease-in-out infinite;
-  animation-delay: 0.5s;
-}
-
-@keyframes thumbsUpBounce {
-  0%, 100% {
-    transform: translateY(0) rotate(0deg);
   }
   25% {
-    transform: translateY(-8px) rotate(5deg);
+    transform: translateY(-20px) rotate(-8deg) scale(1.05);
   }
   50% {
-    transform: translateY(-3px) rotate(-3deg);
+    transform: translateY(-5px) rotate(0deg) scale(1.02);
   }
   75% {
-    transform: translateY(-6px) rotate(3deg);
+    transform: translateY(-20px) rotate(8deg) scale(1.05);
   }
 }
 
-/* Sparkles animation */
-.sparkle {
-  animation: sparkleGlow 0.6s ease-in-out infinite;
-}
-
-.sparkle-1 {
-  animation-delay: 0s;
-}
-
-.sparkle-2 {
-  animation-delay: 0.15s;
-}
-
-.sparkle-3 {
-  animation-delay: 0.3s;
-}
-
-.sparkle-4 {
-  animation-delay: 0.45s;
-}
-
-@keyframes sparkleGlow {
-  0%, 100% {
-    opacity: 0.3;
-    transform: scale(0.8);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.3);
-  }
-}
-
-/* Arms celebrating */
+/* Arms celebrating - waving up and down */
 .chat-mascot.celebrating .chat-mascot-arm-left {
-  animation: armCelebrateLeft 0.4s ease-in-out infinite;
+  animation: armDanceLeft 0.25s ease-in-out infinite;
 }
 
 .chat-mascot.celebrating .chat-mascot-arm-right {
-  animation: armCelebrateRight 0.4s ease-in-out infinite;
-  animation-delay: 0.2s;
+  animation: armDanceRight 0.25s ease-in-out infinite;
+  animation-delay: 0.125s;
 }
 
-@keyframes armCelebrateLeft {
+@keyframes armDanceLeft {
   0%, 100% {
     transform: translateY(0) rotate(-5deg);
   }
   50% {
-    transform: translateY(-15px) rotate(-20deg);
+    transform: translateY(-25px) rotate(-35deg);
   }
 }
 
-@keyframes armCelebrateRight {
+@keyframes armDanceRight {
   0%, 100% {
     transform: translateY(0) rotate(5deg);
   }
   50% {
-    transform: translateY(-15px) rotate(20deg);
+    transform: translateY(-25px) rotate(35deg);
   }
 }
 
-/* Eyes happy when celebrating */
+/* Eyes happy when celebrating - squinting smile */
 .chat-mascot.celebrating .chat-mascot-eye {
-  animation: eyesHappy 0.5s ease-in-out infinite;
+  animation: eyesDance 0.5s ease-in-out infinite;
 }
 
-@keyframes eyesHappy {
+@keyframes eyesDance {
   0%, 100% {
-    transform: scaleY(1);
+    transform: scaleY(0.5);
   }
   50% {
-    transform: scaleY(0.6);
-  }
-}
-
-/* Mobile adjustments for thumbs up */
-@media (max-width: 900px) {
-  .mascot-thumbsup {
-    width: 50px;
-    left: -40px;
-    top: 30px;
-  }
-}
-
-@media (max-width: 480px) {
-  .mascot-thumbsup {
-    width: 40px;
-    left: -30px;
-    top: 25px;
-  }
-}
-
-/* Very small screens thumbs up */
-@media (max-width: 350px) {
-  .mascot-thumbsup {
-    width: 30px;
-    left: -22px;
-    top: 20px;
+    transform: scaleY(0.7);
   }
 }
